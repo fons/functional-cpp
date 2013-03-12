@@ -34,6 +34,8 @@ extern int apf_2();
 extern int apf_3();
 extern int apf_4();
 extern int apf_5();
+extern int apf_6();
+extern int apf_7();
 
 extern int m_1();
 extern int m_2();

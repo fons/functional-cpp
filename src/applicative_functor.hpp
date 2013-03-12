@@ -81,6 +81,17 @@ struct applicative_functor <binary_op> : public functor<binary_op>
     };
   };
 
+  
+
+  template <typename A, typename B, typename R>
+  static std::function<R(A)> apply(std::function< std::function<R(B)>(A) > f, std::function<B(A)> g) {
+    return [=] (A x) {
+      return f(x)(g(x));
+    };
+  };
+
+
+
   template <typename A, typename B, typename R>
   static std::function< std::function<R(A)> (std::function<B(A)>)> apply(std::function < R (A,B)> f) {
     return [&] (std::function<B(A)> g) -> std::function<R(A)> {

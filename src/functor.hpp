@@ -65,7 +65,7 @@ struct functor<binary_op>
 // this does
   template<typename A, typename B, typename R>
   static std::function<B (R)> fmap (std::function<B(A)> f, std::function<A(R)> g) {  
-    return [&f, &g](R x) -> B {
+    return [=](R x) -> B {
       return f(g(x));
     };
   };

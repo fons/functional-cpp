@@ -27,6 +27,8 @@ int main(int argc, char **argv)
 						    ADD_FUNC(apf_3),
 						    ADD_FUNC(apf_4),
 						    ADD_FUNC(apf_5),
+						    ADD_FUNC(apf_6),
+						    ADD_FUNC(apf_7),
 						    ADD_FUNC(m_2)};  
   
   auto show_all = [=] (const std::string& ps)  {       
