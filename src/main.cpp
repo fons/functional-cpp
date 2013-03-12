@@ -15,7 +15,6 @@ int main(int argc, char **argv)
 						    ADD_FUNC(trans_4),
 						    ADD_FUNC(trans_5),
 						    ADD_FUNC(trans_6),
-						    ADD_FUNC(m_1),
 						    ADD_FUNC(functor_1),
 						    ADD_FUNC(functor_2),
 						    ADD_FUNC(functor_3),
@@ -29,7 +28,12 @@ int main(int argc, char **argv)
 						    ADD_FUNC(apf_5),
 						    ADD_FUNC(apf_6),
 						    ADD_FUNC(apf_7),
-						    ADD_FUNC(m_2)};  
+						    ADD_FUNC(apf_8),
+						    ADD_FUNC(m_1),
+						    ADD_FUNC(m_2),
+						    ADD_FUNC(m_3),
+						    ADD_FUNC(m_4),
+						    ADD_FUNC(m_5)};  
   
   auto show_all = [=] (const std::string& ps)  {       
     size_t count = 1;

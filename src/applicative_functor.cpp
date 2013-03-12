@@ -132,12 +132,37 @@ int apf_7()
 
   std::cout << "pl3 : " << pl3(90) << std::endl;
 
-
   auto r    = functor<binary_op>::fmap(plus,pl3);
   
   std::cout << " val : " << r(3)(3) << std::endl;
 
   auto res2 = applicative_functor<binary_op>::apply(r, m100);
+  std::cout << " res2 : " << res2(5) << std::endl;
+
+  return 0;
+}
+
+int apf_8()
+{
+
+  std::function<std::function<int(int)>(int)> plus = [=] (int x) {
+    return [=] (int y) {
+      return x + y;
+    };
+  };
+
+  std::function<std::function<int(int)>(int)> mult = [] (int x) {
+    return [=] (int y) {
+      return x * y;
+    };
+  };
+
+  auto m100 = mult(100);
+  auto pl3  = plus(3);
+
+  std::cout << "pl3 : " << pl3(90) << std::endl;
+
+  auto res2 = applicative_functor<binary_op>::apply(functor<binary_op>::fmap(plus,pl3), m100);
   std::cout << " res2 : " << res2(5) << std::endl;
 
   return 0;
