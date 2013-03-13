@@ -32,5 +32,20 @@ template<> struct monad<std::forward_list> : public applicative_functor<std::for
 
 };
 
+//-----------------------------------------------------------------------------------------
+// 
+//  binary functions
+//
+template<>
+struct monad<binary_op> : public applicative_functor<binary_op> {
+
+  template <typename A, typename B, typename R>
+  static std::function<R(A)> bind(std::function<B(A)> h, std::function < R (A,B)> f) {
+    return [=] (A x) {
+      return f(h(x), x);
+    };
+  };
+  
+};
 
 #endif

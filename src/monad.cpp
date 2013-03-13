@@ -66,6 +66,10 @@ int m_3()
   auto g = plus(3);
   auto res = functor<binary_op>::fmap(f, g);
   std::cout << "res(8) : " << res(8) << std::endl;
+
+  std::function<int(int,int)> uncur = [=] (int x, int y) { return plus(x)(y);};
+  auto res2 = monad<binary_op>::bind(f, uncur);
+  std::cout << " res (10) : " << res(10) << std::endl;
   return 0;
 }
 
