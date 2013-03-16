@@ -75,7 +75,7 @@ int m_3()
 
 int m_4()
 {
-  /*
+
   std::forward_list<int> L = {1,2};
   auto op = [=](int x) {
     std::forward_list<char> R = {'a' , 'b'};
@@ -87,7 +87,7 @@ int m_4()
     std::cout << v << ",";
   }
   std::cout << std::endl;
-  */
+
   return 0;
 }
 
