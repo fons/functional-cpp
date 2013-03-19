@@ -8,8 +8,10 @@
 int main(int argc, char **argv)
 {
 
-  std::map<std::string, std::function<int ()>> M = {ADD_FUNC(lambda_9),
-						    ADD_FUNC(trans_1),
+  std::map<std::string, std::function<int ()>> M = { ADD_FUNC(mpc_1),
+						     ADD_FUNC(mpc_2),
+						     ADD_FUNC(lambda_9),
+						     ADD_FUNC(trans_1),
 						    ADD_FUNC(trans_2),
 						    ADD_FUNC(trans_3),
 						    ADD_FUNC(trans_4),

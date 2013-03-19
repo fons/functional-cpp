@@ -45,4 +45,9 @@ extern int m_4();
 extern int m_5();
 
 extern int w_1();
+
+extern int mpc_1();
+extern int mpc_2();
+
+
 #endif
