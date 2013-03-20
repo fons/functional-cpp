@@ -11,6 +11,11 @@
 #include <string>
 #include <memory>
 
+extern int do_1();
+extern int do_2();
+
+extern int cur_1();
+
 extern int lambda_9();
 
 

@@ -61,6 +61,20 @@ applicative_functor<std::forward_list> :public functor<std::forward_list>{
       };
     };
 
+  template<typename A, typename B, typename lambda>
+  static std::function< std::forward_list<B> (std::forward_list<A>)> apply(std::forward_list<lambda> F) {
+      return [=](std::forward_list<A> L) {
+	std::forward_list<B> acc;
+	for (auto& func : F) {
+	  for (auto& arg : L) {
+	    acc.push_front(func(arg));
+	  }
+	 } 
+	acc.reverse();
+	return acc;
+      };
+    };
+
 };
 
 template<>

@@ -1,4 +1,5 @@
 #include "proto.hpp"
+#include "curry.hpp"
 
 int lambda_1()
 {
@@ -67,15 +68,10 @@ int lambda_5 ()
   
 }
 
-template <typename T, typename U, typename R>
-std::function<std::function<int (U)> (T)> curry (std::function<R (T,U)> op)
-{
-  return [=] (T x) { return [=] (U y) {return op(x, y);};};
-}
 
 int lambda_6 ()
 {
-  auto l = curry<int,int, int> ([](int x, int y) { return (5 + x) * y;});
+  auto l = curry__<int,int, int> ([](int x, int y) { return (5 + x) * y;});
   std::cout << l(1)(1) << std::endl;
   return 0;
 }

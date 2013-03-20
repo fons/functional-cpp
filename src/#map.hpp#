@@ -64,6 +64,7 @@ std::forward_list<B> map (F op, const std::forward_list<A>& L)
 {
   std::forward_list<B> acc;
   for (auto &v : L) {
+    
     acc.push_front(op(v));
   }
   acc.reverse();

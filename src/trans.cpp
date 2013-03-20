@@ -13,8 +13,12 @@ int trans_1()
   std::forward_list<int> L = {1,2,3,4,5,67,12};
   auto v = irc (2345);
   std::cout << " v : " << v << std::endl;
+
   std::function <std::string (std::string&, int)> op = [] (std::string& a, int v) { a.append(1, irc(v)); return a;};
-  std::string res = std::accumulate(L.begin(), L.end(), std::string(""), op);
+
+  auto op2 = [] (std::string& a, int v) { a.append(1, irc(v)); return a;};
+
+  std::string res = std::accumulate(L.begin(), L.end(), std::string(""), op2);
   std::cout << " res : " << res << std::endl;
   return 0;
 }

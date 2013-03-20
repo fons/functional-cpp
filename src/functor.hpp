@@ -46,6 +46,12 @@ functor<std::forward_list> {
   static std::forward_list<B> fmap(std::function <B (A)> f, std::forward_list<A> L) {
     return fmap(f)(L);
   };
+
+  template<typename A, typename B, typename F>
+  static std::forward_list<B> fmap(F f, std::forward_list<A> L) {
+    return map<A,B,F>(f, L);
+  };
+
 };
 
 template<>
