@@ -33,6 +33,17 @@ struct applicative_functor <std::shared_ptr> : public functor<std::shared_ptr>
 	return  std::shared_ptr<B>(nullptr);
       };
     }
+
+  template<typename A, typename B, typename lambda>
+  static std::function< std::shared_ptr<B> (std::shared_ptr<A> v)> apply(std::shared_ptr<lambda> f) {
+      return [=](std::shared_ptr<A> v) {
+	if (v && f) {
+	  auto F = *f;
+	  return pure (F(*v)); 
+	}
+	return  std::shared_ptr<B>(nullptr);
+      };
+    }
     
 };
 

@@ -7,18 +7,11 @@ std::function<std::function<R (U)> (T)> curry__ (std::function<R (T,U)> op)
 {
   return [=] (T x) { return [=] (U y) {return op(x, y);};};
 }
-//------------------------------------------------------
 
-//template <typename F, typename R, typename T=R, typename U=T>
-//std::function<std::function<R (U)> (T)> curry (F op)
-//{
-//  return [=] (T x) { return [=] (U y) {return op(x, y);};};
-//}
-
-template <typename F, typename R, typename... args>
-typename curry_helper<sizeof...(args), F, R, args...>::f1_t curry (F op) 
+template <typename F, typename... args>
+auto curry (F op) 
 {
-  return curry_helper<sizeof...(args), F, R, args...>()(op);
+  return curry_helper<sizeof...(args), F, args...>()(op);
 } 
 
 #endif

@@ -31,6 +31,16 @@ struct functor<std::shared_ptr> {
       return  std::shared_ptr<B>(nullptr);
     };
   }
+
+  template<typename A, typename B, typename F>
+  static std::function<std::shared_ptr<B> (std::shared_ptr<A>)>  fmap (F f) {
+    return [=](std::shared_ptr<A> v) {
+      if (v) {
+	return std::make_shared<B>(f(*v)); 
+      }
+      return  std::shared_ptr<B>(nullptr);
+    };
+  }
 };
 
 template<> struct 

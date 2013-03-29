@@ -13,6 +13,12 @@
 
 extern int do_1();
 extern int do_2();
+extern int do_3();
+extern int do_4();
+extern int do_5();
+extern int do_6();
+extern int do_7();
+extern int do_8();
 
 extern int cur_1();
 

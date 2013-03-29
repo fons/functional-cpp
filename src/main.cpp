@@ -10,6 +10,12 @@ int main(int argc, char **argv)
 
   std::map<std::string, std::function<int ()>> M = { ADD_FUNC(do_1),
 						     ADD_FUNC(do_2),
+						     ADD_FUNC(do_3),
+						     ADD_FUNC(do_4),
+						     ADD_FUNC(do_5),
+						     ADD_FUNC(do_6),
+						     ADD_FUNC(do_7),
+						     ADD_FUNC(do_8),
 						     ADD_FUNC(cur_1),
 						     ADD_FUNC(mpc_1),
 						     ADD_FUNC(mpc_2),
@@ -39,7 +45,7 @@ int main(int argc, char **argv)
 						    ADD_FUNC(m_3),
 						    ADD_FUNC(m_4),
 						    ADD_FUNC(m_5)};  
-  
+
   auto show_all = [=] (const std::string& ps)  {       
     size_t count = 1;
     std::cout << ps;
@@ -103,7 +109,11 @@ int main(int argc, char **argv)
   };
 
   bool keep = true;
-
+  int index = 1;
+  while (argv[index]) {
+    run_cmd(argv[index]);
+    index++;
+  }
   while (keep) {
     std::cout << ps ;
     std::string in;

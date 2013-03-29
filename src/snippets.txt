@@ -1,0 +1,153 @@
+#if 0
+struct do_helper_alt {
+  /*
+    attempt at generalization.....
+  template<typename lambda, typename T1, typename T2, typename T3, typename... T> 
+  static auto dofor(std::forward_list<T1> L1, std::forward_list<T2> L2, std::forward_list<T3> L3, std::forward_list<T>... L) {
+    return [=](lambda f) {
+      auto cff = curry<decltype(f), T1, T2, T3, T...>(f);
+      return _dofor_<lambda>(L1,L2,L3)(cff);
+    };
+  };
+
+  template<typename lambda, typename T1, typename T2, typename T3, typename... T>
+  static auto _dofor_(std::forward_list<T1> L1, std::forward_list<T2> L2, std::forward_list<T3> L3, std::forward_list<T>... L) { 
+    return [=] (lambda cff) {
+      auto C    = _dofor_<lambda>(L2, L3, L...)(cff);<==== note difference; does this cause reverse of order ??
+      typedef decltype(cff(T1())(T2())(T3())) ret_t;====> needs recursive declaration...
+      auto K    = applicative_functor<std::forward_list>::apply<T1, ret_t>(C)(L1);<<==order is reversed ??
+      return K;
+    };
+  };
+  */
+
+  ///////////////////////////////////////////////////////////////////////////////////////
+  // template<typename lambda, typename T1, typename T2, typename T3> 
+  // static auto dofor(std::forward_list<T1> L1, std::forward_list<T2> L2, std::forward_list<T3> L3) {
+  //   return [=](lambda f) {
+  //     auto cff = curry<decltype(f), T1, T2, T3>(f);
+  //     return _dofor_<decltype(cff),T1,T2,T3>(L1,L2,L3)(cff);
+  //   };
+  // };
+
+  template<typename lambda, typename... T> 
+  static auto dofor(std::forward_list<T>... L) {
+    return [=](lambda f) {
+      auto cff = curry<decltype(f), T...>(f);
+      return _dofor_<decltype(cff), T...>(L...)(cff);
+    };
+  };
+
+
+  template<typename lambda, typename T1, typename T2, typename T3, typename... T>
+  static auto _dofor_(std::forward_list<T1> L1, std::forward_list<T2> L2, std::forward_list<T3> L3, std::forward_list<T>... L) { 
+    return [=] (lambda cff) {
+      auto C    = _dofor_<decltype(cff), T1, T2>(L1, L2)(cff);
+      typedef decltype(cff(T1())(T2())(T3())) ret_t;
+      auto K    = applicative_functor<std::forward_list>::apply<T3, ret_t>(C)(L3);
+      return K;
+    };
+  };
+
+  template<typename lambda, typename T1, typename T2>
+  static auto _dofor_(std::forward_list<T1> L1, std::forward_list<T2> L2) { 
+    return [=] (lambda cff) {
+      auto C    = _dofor_<decltype(cff), T1>(L1)(cff);
+      typedef decltype(cff(T1())(T2())) ret_t;
+      auto J    = applicative_functor<std::forward_list>::apply<T2, ret_t>(C)(L2);
+      return J;
+    };
+  };
+
+  template<typename lambda, typename T1>
+  static auto _dofor_(std::forward_list<T1> L) {
+    return [=] (lambda cff) -> std::forward_list<decltype(cff(T1()))> {
+      typedef decltype(cff(T1())) ret_t;
+      auto cffl = applicative_functor<std::forward_list>::pure(cff);
+      auto C    = applicative_functor<std::forward_list>::apply<T1, ret_t>(cffl)(L);
+      return C;
+    };
+  };
+  
+};
+#endif
+
+
+template <typename lambda, typename T0>
+struct b0 {
+  typedef lambda ret_t;
+};
+
+template<typename... T> 
+struct type_list {
+  typedef typename std::tuple<T...> type;
+};
+
+template<int index, typename... T>
+struct type_element {
+  typedef typename std::tuple_element<index, std::tuple<T...>>::type type; 
+};
+
+struct print_helper {
+  template<typename T0, typename... T> 
+  static void pp(std::forward_list<T0> L0, std::forward_list<T>... L) {
+    std::cout << L0 << std::endl;
+    pp<T...>(L...);
+  }
+  template<typename T0>
+  static void pp(std::forward_list<T0> L0) {
+    std::cout << L0 << std::endl;
+  }
+};
+
+
+// template <typename T1, typename... args>
+// struct testy {
+//   //static const int index = testy<args...>::index + 1;
+//   //static int get_index (int l) {
+//   //  if (l == index) return index;
+//   //  return testy<args...>::get_index(l);
+//   //}
+//   static void dothis(std::forward_list<T1> L1, args... A) {
+//     std::cout << L1 << std::endl;
+//     return testy<args...>::dothis(A...);
+//   }
+// };
+
+// template<typename T>
+// struct testy<T> {
+//   //static const int index = 0;
+//   //static int get_index(int l) {
+//   //  return index;
+//   //}
+//   static void dothis(std::forward_list<T> L) {
+//     std::cout << L << std::endl;
+//   }
+  
+//};
+int do_7 ()
+{
+  type_list<int, char, std::string>::type t = std::make_tuple(10, '1', "hello");
+  type_element<0, int,char, std::string>::type AAA;
+  AAA = 1;
+  std::cout << AAA << std::endl;
+
+  std::forward_list< type_element<0, int,char, std::string>::type> LL0;
+  std::forward_list<type_element<1, int,char, std::string>::type> LL1;
+  std::forward_list<type_element<2, int,char, std::string>::type> LL2;
+
+  std::cout << LL0 << std::endl;
+  std::cout << LL1 << std::endl;
+  std::cout << LL2 << std::endl;
+
+  print_helper::pp<int,char,std::string>(LL0,LL1,LL2);
+
+
+//------------------------------------------------------
+
+//template <typename F, typename R, typename T=R, typename U=T>
+//std::function<std::function<R (U)> (T)> curry (F op)
+//{
+//  return [=] (T x) { return [=] (U y) {return op(x, y);};};
+//}
+//typename curry_helper<sizeof...(args), F, args...>::f1_t 

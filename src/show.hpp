@@ -4,7 +4,7 @@
 template<typename T>
 std::ostream& operator<<(std::ostream& strm, const std::forward_list<T>& L) 
 {
-  strm << "forward_list<" << typeid(T).name() << "> {";
+  strm << "forward_list<" << typeid(T).name() << "> [";
   size_t index = 7;
   for (auto& v : L) {
     strm << v << ",";
@@ -12,7 +12,7 @@ std::ostream& operator<<(std::ostream& strm, const std::forward_list<T>& L)
       strm<< std::endl;
     }
   }
-  return strm << "}";
+  return strm << "]";
 }
 //from Josuttis : The c++ standard library 2nd edition 
 
@@ -31,8 +31,19 @@ struct print_tuple<MAX,MAX,args...> {
 };
 template<typename... args>
 std::ostream& operator<<(std::ostream& strm, const std::tuple<args...>& t) {
-  strm << "[";
+  strm << "(";
   print_tuple<0, sizeof...(args), args...>::pp(strm,t);
-  return strm<<"]";
+  return strm<<")";
 }
+
+template <typename T>
+std::ostream& operator<<(std::ostream& strm, std::shared_ptr<T> t)
+{
+  strm << "std::shared_ptr<" << typeid(T).name() << ">(";
+  if (t) {
+    return strm << *t << ")";
+  }
+  return strm <<  "NULL)";
+}
+
 #endif
