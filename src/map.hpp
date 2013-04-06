@@ -69,5 +69,25 @@ std::forward_list<B> map (F op, const std::forward_list<A>& L)
   acc.reverse();
   return acc;
 }
+template<typename A, typename B>
+std::list<B> map (std::function<B (A)> op, const std::list<A>& L)
+{
+  std::list<B> acc;
+  for (auto &v : L) {
+    acc.push_back(op(v));
+  }
+  return acc;
+}
+
+template<typename A, typename B, typename F>
+std::list<B> map (F op, const std::list<A>& L)
+{
+  std::list<B> acc;
+  for (auto &v : L) {
+    acc.push_back(op(v));
+  }
+  return acc;
+}
+
 
 #endif

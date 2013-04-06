@@ -70,3 +70,13 @@ int functor_6()
   std::cout << " r (5) : " << v << std::endl;
   return 0;
 }
+
+
+int functor_7()
+{
+  std::list<W> L = {W(10, "a"), W(20, "b"), W(3467, "mnhjk")};
+  std::function<int (W)> show =[](W w) { w.pp(std::cerr) << std::endl; return w.ssn();};
+  functor<std::list>::fmap(show)(L);
+
+  return 0;
+}

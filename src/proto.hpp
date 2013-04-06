@@ -39,6 +39,7 @@ extern int functor_3();
 extern int functor_4();
 extern int functor_5();
 extern int functor_6();
+extern int functor_7();
 
 extern int apf_1();
 extern int apf_2();
@@ -59,6 +60,10 @@ extern int w_1();
 
 extern int mpc_1();
 extern int mpc_2();
+extern int mpc_3();
+extern int mpc_4();
+extern int mpc_5();
+extern int mpc_6();
 
 
 #endif

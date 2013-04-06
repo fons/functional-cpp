@@ -64,6 +64,29 @@ functor<std::forward_list> {
 
 };
 
+
+template<> struct 
+functor<std::list> {
+  template<typename A, typename B>
+  static std::function < std::list<B> (std::list<A>)> fmap(std::function <B (A)> f) {
+    return [=] (std::list<A> L) {
+      return map<A,B>(f,L);
+    };
+  };
+
+  template<typename A, typename B>
+  static std::list<B> fmap(std::function <B (A)> f, std::list<A> L) {
+    return fmap(f)(L);
+  };
+
+  template<typename A, typename B, typename F>
+  static std::list<B> fmap(F f, std::list<A> L) {
+    return map<A,B,F>(f, L);
+  };
+
+};
+
+
 template<>
 struct functor<binary_op>
 {
@@ -87,5 +110,8 @@ struct functor<binary_op>
   };
 
 };
+
+//#include "mpc.hpp"
+
 
 #endif

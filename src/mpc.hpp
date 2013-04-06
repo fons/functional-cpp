@@ -80,4 +80,25 @@ parser_t<a> parse (Parser<a> P) {
 
 extern plist_t<char> item_f(std::string s);
 
+#include "functor.hpp"
+
+template<>
+struct functor<Parser>
+{
+
+  template<typename A, typename B>
+  static std::function < Parser<B> (Parser<A>)> fmap(std::function <B (A)> f) {
+    return [=] (Parser<A> P) {
+      parser_t<B> pb = [=] (std::string inp) {
+	std::function< ppair_t<B> (ppair_t<A>)> lab = [=] (ppair_t<A> v) {
+	  return ppair_t<B>(f (std::get<0>(v)), std::get<1>(v));
+	};
+	return functor<std::list>::fmap(lab)(parse(P)(inp));
+      };
+      return Parser<B>(pb);
+    };
+  };
+};
+
+
 #endif
