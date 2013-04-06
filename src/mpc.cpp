@@ -72,20 +72,22 @@ struct applicative_functor <Parser> : public functor<Parser>
   template<typename A, typename B, typename lambda>
   static std::function< Parser<B> (Parser<A>)> apply(Parser<lambda> F) {
       return [=](Parser<A> L) {
-	parser_t<B> rb = [=] (std::string s) {
-	  auto ll = parse(F)(s);
-	  //we assume only one element; s/b generalized !
-	  ppair_t<lambda> el = ll.front();
-	  //std::cout << " el 1 : " << std::get<1>(el) << std::endl;
-	  //std::cout << " el 0 : " << std::get<0>(el)('r') << std::endl;
-	  auto la = parse(L)(std::get<1>(el));
-	  //std::cout << "la : " << la << std::endl;
-	  std::function< ppair_t<B> (ppair_t<A>)> lab = [=] (ppair_t<A> v) {
-	    return ppair_t<B>(std::get<0>(el) (std::get<0>(v)), std::get<1>(v));
-	  };
-	  auto resb = functor<std::list>::fmap(lab)(la);
-	  //std::cout << "resb : " << resb << std::endl;
-	  return resb;
+
+	parser_t<B> rb = [=] (std::string input) {
+	  auto lambda_parse = parse(F)(input);
+	  plist_t<B> results;
+	  for (auto& el : lambda_parse) {
+
+	    auto csp = parse(L)(std::get<1>(el));
+
+	    std::function< ppair_t<B> (ppair_t<A>)> lab = [=] (ppair_t<A> v) {
+	      return ppair_t<B>(std::get<0>(el) (std::get<0>(v)), std::get<1>(v));
+	    };
+	    plist_t<B> l = functor<std::list>::fmap(lab)(csp);
+	    results.insert(results.end(), l.begin(), l.end());
+	  }
+	
+	  return results;
 	};
 
 	return Parser<B>(rb);
