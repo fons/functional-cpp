@@ -1,5 +1,5 @@
 #include "proto.hpp"
-
+#include "map.hpp"
 
 static char digits[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
 
@@ -65,26 +65,45 @@ int trans_4()
   return 0;
 }
 
-
-template<typename A, typename B>
-std::forward_list<B> map (std::function<B(A)> f, const std::forward_list<A>& L) 
-{
-  std::forward_list<B> H;
-  std::transform(L.begin(), L.end(), std::front_inserter(H), f);
-  H.reverse();
-  return H;
-}
-
 int trans_5()
 {
   std::forward_list<int> L = {1,67,89,23,45,1,3,99,-90};
-  std::function<int(int)> show = [] (int v) { std::cout << v << ","; return v;};
-  map(show, L);
-  std::function<int(int)> op = [] (int y) {return (y + 79) % 45;};
-  std::forward_list<int> H2 = map (op, L);
-
+  auto show = [] (int v) { std::cout << v << ","; return v;};
   std::cout << std::endl << "--------------" << std::endl;
-  map(show, H2);
+  map(show, map ([] (int y) {return (y + 79) % 45;}, map(show, L)));
+  return 0;
+}
+
+int trans_6()
+{
+  std::forward_list<int> L = {1,67,89,23,45,1,3,99,-90};
+  auto show = [] (int v) { std::cout << v << ","; return v;};
+  std::function< std::function <int(int)>(int)> op   = [] (int x) {
+    return [=] (int y) {
+      return 4 * x + y;
+    };
+  };
+  std::cout << std::endl << "--------------" << std::endl;
+  map(show, 
+      map([](std::function<int(int)> f){return f(2);}, 
+	  map(op, L)));
+  return 0;
+}
+
+int trans_7()
+{
+  std::forward_list<int> L = {1,67,89,23,45,1,3,99,-90};
+  auto show = [] (int v) { std::cout << v << ","; return v;};
+  std::function< std::function <int(int)>(int)> op   = [] (int x) {
+    return [=] (int y) {
+      return 4 * x + y;
+    };
+  };
+  auto l = std::bind([](std::function<int(int)> f){return f(2);},
+		     std::bind(op, std::placeholders::_1));
+
+  map(show, map(l, L));
+
   return 0;
 }
 
@@ -98,7 +117,7 @@ std::forward_list<std::tuple<A,B>> zip (const std::forward_list<A>& L, const std
   return H;
 }
 
-int trans_6()
+int trans_8()
 {
   std::forward_list<int>  L = {1,67,89,23,45,1,3,99,-90};
   std::forward_list<char> M = {'a','b','l','u','t','v','r','6','h'};

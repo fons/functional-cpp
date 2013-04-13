@@ -22,6 +22,9 @@ extern int do_8();
 
 extern int cur_1();
 
+extern int lambda_1();
+extern int lambda_6();
+extern int lambda_7();
 extern int lambda_9();
 
 
@@ -31,6 +34,8 @@ extern int trans_3();
 extern int trans_4();
 extern int trans_5();
 extern int trans_6();
+extern int trans_7();
+extern int trans_8();
 
 
 extern int functor_1();
@@ -65,5 +70,9 @@ extern int mpc_4();
 extern int mpc_5();
 extern int mpc_6();
 
+extern int bind_1();
+extern int bind_2();
+extern int bind_4();
+extern int bind_5();
 
 #endif

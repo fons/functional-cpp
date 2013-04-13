@@ -3,7 +3,7 @@
 #include "curry_helper.hpp"
 
 template <typename R, typename T, typename U>
-std::function<std::function<R (U)> (T)> curry__ (std::function<R (T,U)> op)
+std::function<std::function<R (U)> (T)> curry (std::function<R (T,U)> op)
 {
   return [=] (T x) { return [=] (U y) {return op(x, y);};};
 }

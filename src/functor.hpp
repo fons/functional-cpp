@@ -59,7 +59,7 @@ functor<std::forward_list> {
 
   template<typename A, typename B, typename F>
   static std::forward_list<B> fmap(F f, std::forward_list<A> L) {
-    return map<A,B,F>(f, L);
+    return map<A,F>(f, L);
   };
 
 };

@@ -71,7 +71,7 @@ int lambda_5 ()
 
 int lambda_6 ()
 {
-  auto l = curry__<int,int, int> ([](int x, int y) { return (5 + x) * y;});
+  auto l = curry<int,int, int> ([](int x, int y) { return (5 + x) * y;});
   std::cout << l(1)(1) << std::endl;
   return 0;
 }
@@ -79,14 +79,15 @@ int lambda_6 ()
 int lambda_7 ()
 {
   // as opposed to [=] or [] or [l]
-  std::function<int (int)> l = [&l] (int x) ->int {
+  std::function<int (int)> factorial = [&factorial] (int x) ->int {
     std::cout << x << ",";
-    if (x < 0) return 0;
-    x--;
-    return l(x);
+    if (x == 0) return 1;
+    return x * factorial(x-1);
     
   };
-  l(25);
+  auto res = factorial(10);
+  std::cout << std::endl;
+  std::cout << "res : " << res << std::endl;
   return 0;
 }
 

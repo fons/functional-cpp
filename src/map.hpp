@@ -48,6 +48,7 @@ std::forward_list<U> map_alt_recur (std::function<U (T)>& op, std::forward_list<
   return helper(acc);
 }
 
+
 template<typename A, typename B>
 std::forward_list<B> map (std::function<B (A)> op, const std::forward_list<A>& L)
 {
@@ -59,6 +60,7 @@ std::forward_list<B> map (std::function<B (A)> op, const std::forward_list<A>& L
   return acc;
 }
 
+/*
 template<typename A, typename B, typename F>
 std::forward_list<B> map (F op, const std::forward_list<A>& L)
 {
@@ -69,6 +71,8 @@ std::forward_list<B> map (F op, const std::forward_list<A>& L)
   acc.reverse();
   return acc;
 }
+*/
+
 template<typename A, typename B>
 std::list<B> map (std::function<B (A)> op, const std::list<A>& L)
 {
@@ -89,5 +93,14 @@ std::list<B> map (F op, const std::list<A>& L)
   return acc;
 }
 
+
+template<typename A, typename F>
+auto map (F f, const std::forward_list<A>& L) -> std::forward_list<decltype(f(A()))>
+{
+  std::forward_list<decltype(f(A()))> H;
+  std::transform(L.begin(), L.end(), std::front_inserter(H), f);
+  H.reverse();
+  return H;
+}
 
 #endif
