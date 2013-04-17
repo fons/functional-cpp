@@ -36,6 +36,7 @@ extern int trans_5();
 extern int trans_6();
 extern int trans_7();
 extern int trans_8();
+extern int trans_9();
 
 
 extern int functor_1();

@@ -39,6 +39,7 @@ int main(int argc, char **argv)
 						    ADD_FUNC(trans_6),
 						    ADD_FUNC(trans_7),
 						    ADD_FUNC(trans_8),
+						    ADD_FUNC(trans_9),
 						    ADD_FUNC(functor_1),
 						    ADD_FUNC(functor_2),
 						    ADD_FUNC(functor_3),

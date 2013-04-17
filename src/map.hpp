@@ -103,4 +103,12 @@ auto map (F f, const std::forward_list<A>& L) -> std::forward_list<decltype(f(A(
   return H;
 }
 
+template<typename A, typename F>
+auto map (F f, const std::list<A>& L) -> std::list<decltype(f(A()))>
+{
+  std::list<decltype(f(A()))> H;
+  std::transform(L.begin(), L.end(), std::back_inserter(H), f);
+  return H;
+}
+
 #endif

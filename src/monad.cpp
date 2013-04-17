@@ -1,30 +1,49 @@
 #include "proto.hpp"
 #include "monad.hpp"
+#include "show.hpp"
 
 
 
-// [a] -> (a ->[b]) ->[b]
-template<typename A>
-std::forward_list<A> bind_list (std::forward_list<A> L, std::function<std::forward_list<A> (A)> f)
+template<typename A, typename F>
+auto mapM (F f, std::forward_list<A> L) -> decltype(f(A()))
 {
-  std::function<std::forward_list<A> (std::forward_list<A>, std::forward_list<A>)> concat = [] (std::forward_list<A> L, std::forward_list<A> R) { L.splice_after(L.before_begin(), R); return L;};
-  auto op = std::bind(concat, std::placeholders::_1, std::bind(f, std::placeholders::_2));
-  return std::accumulate(L.begin(), L.end(), std::forward_list<A>(), op);;
+  typedef typename decltype(f(A()))::value_type ret_t;
+  L.reverse();
+  auto concat = [] (std::forward_list<ret_t> L, std::forward_list<ret_t> R) { 
+    L.splice_after(L.before_begin(), R); 
+    return L;
+  };
+  auto op     = std::bind(concat, std::placeholders::_1, std::bind(f, std::placeholders::_2));
+  return std::accumulate(L.begin(), L.end(), std::forward_list<ret_t>(), op);;
 }
 
 
-int m_1()
-{
 
+int m_0()
+{
+  auto show   = [] (int v) { std::cout << v << ","; return v;};
   typedef std::forward_list<int> list_t;
   list_t L = {1,-6,23,78,45,13};
-  std::function<list_t (int)> l1 = [] (int y) {list_t K; K.push_front(2*y +1); return K;};  
-  auto res1 = bind_list(L, l1);
-  std::cout << "results : " << std::endl;
-  for (auto& v: res1) {
-    std::cout << v << std::endl;
-  }
+  auto l1  = [] (int y) {return list_t ({2*y+1, -y, -2*y + 1});};
+  map(show, mapM(l1, L));
+  return 0;
+}
 
+int m_1()
+{  
+  auto show   = [] (std::tuple<int,char> v) { std::cout << v << ","; return v;};
+  static char digits[] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j' };
+  typedef std::forward_list<std::tuple<int, char>> list_t;
+  auto op  = [=] (int y) {return list_t({std::make_tuple(y, digits[abs(y)%10])});};
+  map(show, mapM(op, std::forward_list<int>({1,-6,23,78,45,13})));
+
+  auto res = map(op, std::forward_list<int>({1,-6,23,78,45,13}));
+  std::cout << std::endl <<  "-----------" << std::endl;
+  for (auto& el : res) {
+    std::cout << "[";
+    map(show, el);
+    std::cout << "], ";
+  }
   return 0;
 }
 
