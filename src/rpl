@@ -1,0 +1,4 @@
+#!/usr/bin/env ksh
+cmd="../bin/main $*"
+echo $cmd
+eval $cmd
