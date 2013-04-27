@@ -1,0 +1,319 @@
+\documentclass[12pt,fleqn]{article}
+\usepackage{comment}
+\usepackage{nth}
+\usepackage{setspace}
+\usepackage{color}
+\usepackage{listings}
+\lstset{ %
+language=C++,                % choose the language of the code
+basicstyle=\footnotesize,       % the size of the fonts that are used for the code \footnotesize
+numbers=left,                   % where to put the line-numbers
+numberstyle=\footnotesize,      % the size of the fonts that are used for the line-numbers
+stepnumber=1,                   % the step between two line-numbers. If it is 1 each line will be numbered
+numbersep=5pt,                  % how far the line-numbers are from the code
+backgroundcolor=\color{white},  % choose the background color. You must add \usepackage{color}
+showspaces=false,               % show spaces adding particular underscores
+showstringspaces=false,         % underline spaces within strings
+showtabs=false,                 % show tabs within strings adding particular underscores
+frame=single,           % adds a frame around the code
+tabsize=2,          % sets default tabsize to 2 spaces
+captionpos=b,           % sets the caption-position to bottom
+breaklines=true,        % sets automatic line breaking
+breakatwhitespace=false,    % sets if automatic breaks should only happen at whitespace
+escapeinside={\%*}{*)}          % if you want to add a comment within your code
+}
+
+\lstloadlanguages{% Check Dokumentation for further languages ...
+         %[Visual]Basic
+         %Pascal
+         %C
+         C++
+         %XML
+         %HTML
+         %Java
+ }
+\doublespacing
+ 
+\renewcommand{\familydefault}{\sfdefault}
+
+%
+%no math indentation..
+%
+\setlength{\mathindent}{0pt}
+%
+% no identtation at the start of a paragraph.
+\setlength{\parindent}{0in}
+%------------------------
+
+\newenvironment{packed_enum}{
+\begin{enumerate}
+ \setlength{\itemindent}{-15pt}
+  \setlength{\itemsep}{1pt}
+  \setlength{\parskip}{0pt}
+  \setlength{\parsep}{0pt}
+}{\end{enumerate}}
+
+\newenvironment{packed_itemize}{
+\begin{itemize}
+\setlength{\itemindent}{-15pt}
+  \setlength{\itemsep}{0pt}
+  \setlength{\parskip}{0pt}
+  \setlength{\parsep}{0pt}
+}{\end{itemize}}
+
+
+\begin{document}
+\title{$\lambda$ 's on the edge \\ Functional Programming in C++ part deux}
+\author {Alfons Haffmans}
+\maketitle
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section* {Introduction}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+This is a continuation of a previous article in which I discussed support for fucntional programming built into C++.
+In this article I'll be looking to extend C++ to support advanced functional concepts like functors, applicative functors and monads.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+\section*{Currying}
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+{\em Currying} turns any function into a higher order function of one variable \cite{field}.
+The curry of the function returns a partially applied version of the original.
+
+The operator $curry2$ is a higher order function which takes a binary function as input 
+and returns a unary higher order function.
+That function is the curry of the binary function.
+%%--------
+\begin{eqnarray*}
+curry2 \; :: \; ((a,b) \rightarrow c) &\rightarrow& (a \rightarrow b \rightarrow c) \\
+f::(a,b) \rightarrow c &\Rightarrow&  (curry2\;f)::a \rightarrow b \rightarrow c 
+\end{eqnarray*}
+%-----------------------------
+When the curried version of $f$ is called with an argument of type $a$ it returns another unary function 
+Calling this function with an argument of type $b$ returns the same value as $f$.
+%%%
+\begin{eqnarray*}
+plus\;:\;:(int \;x, int \;y) \;::int = x+y &\Rightarrow& cplus(int\; x) \;::\; (int \rightarrow int)  \\
+                                                             & & \rightarrow (int \; y) \;::\; int \rightarrow x+y  \\
+plus(5,6) = 11 &\Leftrightarrow&(curry2 \; plus)(5)(6) = 11
+\end{eqnarray*}
+%%---------
+$(curry2 plus)$ is the curried version of $plus$.
+{\em curry2 plus)(5)} returns a lambda which represents the $plus$ function partially applied to 5. 
+When this partially applied version of $plus$ is called with 6 an unsurprising 11 is the result.
+
+Listing \ref{curry2} shows an implementation of curry2 in C++: 
+%--
+\begin{lstlisting}[caption=curry for binary operators, label=curry2]
+template <typename R, typename T, typename U>
+std::function<std::function<R (U)> (T)> curry(std::function<R (T,U)> op)
+{
+  return [=] (T x) { return [=] (U y) {return op(x, y);};};
+}
+  auto l = curry<int,int, int> ([](int x, int y) { return (5 + x) * y;});
+  std::cout << l(1)(1) << std::endl; //prints 6
+\end{lstlisting}
+%---
+Currying plays an important role in functional programming \cite{field}. 
+It simplifies the design of higher order functions because we only have to consider unary functions.
+
+C++ does not provide a curry operator and functions are not written in curried form. 
+Compare this to Haskell where functions are curried by default \cite{lipovaca, hutton}.
+However writing a curry operator or writing curried versions of a function has become a lot easier now that lambda's are supported.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+\section*{Functors}
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Functors generalize the concept of mapping a function over values in a container.
+Their typeclass is :
+\begin{eqnarray*}
+\mbox{class Functor f where} \\
+fmap :: (a \rightarrow b) -> f\;a \rightarrow f\;b
+\end{eqnarray*}
+
+In C++ this is defined in the template 
+\begin{lstlisting}
+template <template<typename T1, typename... D> class F>
+struct functor {
+
+  //curried version
+  template<typename A, typename B>
+  static std::function < F<B> (F<A>)> fmap(std::function <B (A)> f);
+
+  // uncurried, for functions..
+  template<typename A, typename B>
+  static F<B> fmap(std::function <B (A)> f, F<A> L) {
+    return fmap(f)(L);
+  }
+};
+\end{lstlisting}
+The class F can have more than one template parameter, as indicated by the variadic template.
+This allows specialization for containers since they have more than one template parameter.
+
+Useful functors satisfy the following laws
+\begin{eqnarray*}
+fmap \; id = id  \\
+fmap (g \; . \; f) = (fmap f) . (fmap f) 
+\end{eqnarray*}
+
+$.$ is the function composition operattor, read as $after$. It applies the function g after the fucntion f, viz.
+\begin{eqnarray*}
+(g \; . \; f)(x) = g(f(x)) 
+\end{eqnarray*}
+
+
+\subsection{Lists}
+For lists like $std::list$ and $std::foward\_list$ fmap corresponds to map.
+\begin{lstlist}
+
+\end{lstlist}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+\section*{Applicative Functors}
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+\section*{Monads}
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+\section*{Do-like Notation}
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+\section*{Conclusions}
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{thebibliography}{99}
+%--
+\bibitem{stroustrup}
+Bjarne Stroustrup \\
+{\em The C++ Programming Language} \\
+Addison-Wesley, 1997, \nth{3} edition.
+%---
+\bibitem{mcnamara}
+Brian McNamara, Yannis Smaragdakis  \\
+Functional programming with the FC++ library. \\
+J. Funct. Program. 14(4): 429-472 (2004)
+%---
+\bibitem{vandevoorde}
+David Vandevoorde, Nicolai M. Josuttis \\
+{\em C++ Templates} \\
+Addison-Wesley, 2003.
+%
+\bibitem{alexan}
+Andrei Alexandrescu \\
+{\em Modern C++ Design} \\
+Addison-Wesley, 2001
+%
+\bibitem{lipovaca}
+ Miran Lipova\v{c}a\\
+{\em Learn you a Haskell for great good : a beginner's guide}\\
+no starch press, San Fransisco, 2011
+%--
+\bibitem{hutton} 
+Graham Hutton \\
+{\em Programming in Haskell} \\
+Cambridge University Press, 2007
+%---
+\bibitem{bird}
+Richard Bird
+{\em Introduction to Functional Programming using Haskell}
+Prentice Hall Europe, 1998, \nth{2} edition
+%-----
+\bibitem{field}
+Anthony J. Field and Peter G. Harrison \\
+{\em Functional Programming} \\
+Addison-Wesley, 1989.
+%------
+\bibitem{scott}
+Michael L. Scott \\
+{\em Programming Language Pragmatics} \\
+Morgan Kauffmann, 2006, \nth{2} edition
+%-----
+\bibitem{designpatterns}
+Erich Gamma, Richard Helm, Ralph Johnson, John Vlissides \\
+{\em Design Patterns : Elements of Reusable Object-Oriented Software} \\
+Addison Wesley Longman, 1995
+%----
+\bibitem{josuttis}
+Nocolai M. Josuttis \\
+{\em The C++ Standard Library}\\
+Addison-Wesley, \nth{2} edition.
+%---
+\bibitem{sourcecode}
+\underline{\em https://github.com/fons/functional-cpp}
+%---
+\bibitem{macports}
+\underline {\em http://www.macports.org/}
+%--
+\bibitem{lambdaref}
+\underline{\em http://en.cppreference.com/w/cpp/language/lambda}
+%---
+\bibitem{std::function}
+\underline{\em http://en.cppreference.com/w/cpp/utility/functional/function}
+%---
+\bibitem{auto}
+\underline{\em http://en.cppreference.com/w/cpp/language/auto}
+%---
+\bibitem{std::bind}
+\underline{\em http://en.cppreference.com/w/cpp/utility/functional/bind}
+%--
+\bibitem{std::placeholder}
+\underline{\em http://en.cppreference.com/w/cpp/utility/functional/placeholders}
+%----
+\bibitem{std::foreach}
+\underline{\em http://en.cppreference.com/w/cpp/algorithm/for\_each}
+%
+\bibitem{std::forward_list}
+\underline{\em http://en.cppreference.com/w/cpp/algorithm/forward\_list}
+
+%----
+\bibitem{std::transform}
+\underline {\em http://en.cppreference.com/w/cpp/algorithm/transform}
+%---
+\bibitem{decltype}
+\underline{\em http://en.cppreference.com/w/cpp/language/decltype}
+%---
+\bibitem{std::accumulate}
+\underline{\em http://en.cppreference.com/w/cpp/algorithm/accumulate}
+%----
+\bibitem{zip}
+zip function in Python \\
+\underline{\em  http://docs.python.org/2/library/functions.html\#zip}\\
+zip function in Ruby \\
+\underline{\em http://ruby-doc.org/core-2.0/Array.html\#method-i-zip} \\
+Support in Perl \\
+\underline{\em http://search.cpan.org/~lbrocard/Language-Functional-0.05/Functional.pm}  
+%----
+\bibitem{yorgey}
+Brent Yorgey \\
+{\em The Typeclassopedia}
+The Monad.Reader, Issue 13; p17; 12 March 2009
+\underline{\em www.haskell.org/wikiupload/8/85/TMR-Issue13.pdf}
+%----
+\bibitem{tuples}
+\underline{\em http://en.cppreference.com/w/cpp/utility/tuple}
+%----
+
+%%---non bibitems below this line
+%%
+\end{thebibliography}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{document}

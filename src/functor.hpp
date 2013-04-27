@@ -67,6 +67,7 @@ functor<std::forward_list> {
 
 template<> struct 
 functor<std::list> {
+
   template<typename A, typename B>
   static std::function < std::list<B> (std::list<A>)> fmap(std::function <B (A)> f) {
     return [=] (std::list<A> L) {
@@ -79,9 +80,9 @@ functor<std::list> {
     return fmap(f)(L);
   };
 
-  template<typename A, typename B, typename F>
-  static std::list<B> fmap(F f, std::list<A> L) {
-    return map<A,B,F>(f, L);
+  template<typename A, typename F>
+  static auto fmap(F f, std::list<A> L) -> std::list<decltype(f(A()))> {
+    return map<A,F>(f, L);
   };
 
 };
