@@ -43,7 +43,7 @@ int main(int argc, char **argv)
 						    ADD_FUNC(functor_1),
 						    ADD_FUNC(functor_2),
 						    ADD_FUNC(functor_3),
-						    ADD_FUNC(functor_4),
+						     //ADD_FUNC(functor_4),
 						    ADD_FUNC(functor_5),
 						    ADD_FUNC(functor_6),
 						    ADD_FUNC(functor_7),
@@ -51,7 +51,7 @@ int main(int argc, char **argv)
 						    ADD_FUNC(apf_2),
 						    ADD_FUNC(apf_3),
 						    ADD_FUNC(apf_4),
-						    ADD_FUNC(apf_5),
+						     //ADD_FUNC(apf_5),
 						    ADD_FUNC(apf_6),
 						    ADD_FUNC(apf_7),
 						    ADD_FUNC(apf_8),
@@ -74,6 +74,18 @@ int main(int argc, char **argv)
     std::cout << ps << "!n : command at position n" << std::endl;
   };
 
+  auto run_all = [=] (const std::string& ps)  {       
+    size_t count = 1;
+    for (auto& p : M) {
+      std::cout << ps << " [" << count++ << "] " <<p.first << std::endl;
+      p.second();
+      std::cout << std::endl << "     *done*     " << std::endl;
+      
+    }
+    std::cout << std::endl;
+  };
+
+
   auto is_number = [] (const std::string& s) {
     return !s.empty() && std::find_if(s.begin(), s.end(), [](char c) { return !std::isdigit(c); }) == s.end();
   }; 
@@ -89,7 +101,7 @@ int main(int argc, char **argv)
     if(it != M.end()) {
       std::cout << ps << "executing " << it->first << std::endl;
       it->second();
-      std::cout << "     ***     " << std::endl;
+      std::cout << "     *done*     " << std::endl;
     }
     else {
       std::cout << ps << "action " << in << " not found" << std::endl;
@@ -113,6 +125,10 @@ int main(int argc, char **argv)
     if (in == "q" or in == "Q") bail(ps);
     if (in == "?") {
       show_all(ps);
+      return;
+    }
+    if (in == "all") {
+      run_all(ps);
       return;
     }
     if (in == "h") {
@@ -146,7 +162,6 @@ int main(int argc, char **argv)
       }
     }
     run_cmd(cmd);
-
   }
   return 0;
 }
