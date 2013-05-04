@@ -3,12 +3,13 @@
 
 template <int n, typename F, typename T1, typename T2=T1, typename T3=T2, typename T4=T3, typename T5=T4>
 struct curry_helper {
-  auto operator()(F op);
+  //  auto operator()(F op);
+
 };
 
 template<typename F, typename T1>
 struct curry_helper<1,F,T1> {
-  auto operator() (F op) {
+  auto operator() (F op)  {
     return [=] (T1 x) {return op(x);};
   }
 };
