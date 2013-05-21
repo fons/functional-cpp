@@ -49,10 +49,10 @@ int apf_2()
 
 int apf_3()
 {
-  auto val2 = applicative_functor<binary_op>::pure<int,int>(56);
+  auto val2 = applicative_functor<unary_op>::pure<int,int>(56);
   std::cout << " pure (56) : "<< val2(89) << std::endl;
 
-  auto val3 = applicative_functor<binary_op>::pure<int>(56);
+  auto val3 = applicative_functor<unary_op>::pure<int>(56);
   std::cout << " pure (56) : "<< val3(8990) << std::endl;
 
   return 0;
@@ -62,7 +62,7 @@ int apf_4()
 {
   std::function<int (int, int)> f = [] (int x, int y) { return x + y + 5 ;};
   std::function<int (int)> g = [] (int x) { return x * 400;};
-  auto res = applicative_functor<binary_op>::apply(f,g);
+  auto res = applicative_functor<unary_op>::apply(f,g);
   std::cout << " val : " << res(3) << std::endl;
   return 0;
 }
@@ -72,7 +72,7 @@ int apf_5()
   std::function<int (int, int)> f = [] (int x, int y) { return x + y + 5 ;};
   std::function<int (int)> g = [] (int x) { return x * 400;};
 
-  auto res = applicative_functor<binary_op>::apply(f)(g);
+  auto res = applicative_functor<unary_op>::apply(f)(g);
   std::cout << " val : " << res(3) << std::endl;
   return 0;
 }
@@ -98,7 +98,7 @@ int apf_6()
   std::cout << "pl3 : " << pl3(90) << std::endl;
 
 
-  auto r    = functor<binary_op>::fmap(plus,pl3);
+  auto r    = functor<unary_op>::fmap(plus,pl3);
   
   std::cout << " val : " << r(3)(3) << std::endl;
 
@@ -106,7 +106,7 @@ int apf_6()
 
   std::cout << "uncur : " << uncur(3,3) << " compare : " << r(3)(3) << std::endl;
 
-  auto res = applicative_functor<binary_op>::apply(uncur, m100);
+  auto res = applicative_functor<unary_op>::apply(uncur, m100);
   std::cout << " res : " << res(5) << std::endl;
 
   return 0;
@@ -132,11 +132,11 @@ int apf_7()
 
   std::cout << "pl3 : " << pl3(90) << std::endl;
 
-  auto r    = functor<binary_op>::fmap(plus,pl3);
+  auto r    = functor<unary_op>::fmap(plus,pl3);
   
   std::cout << " val : " << r(3)(3) << std::endl;
 
-  auto res2 = applicative_functor<binary_op>::apply(r, m100);
+  auto res2 = applicative_functor<unary_op>::apply(r, m100);
   std::cout << " res2 : " << res2(5) << std::endl;
 
   return 0;
@@ -162,7 +162,7 @@ int apf_8()
 
   std::cout << "pl3 : " << pl3(90) << std::endl;
 
-  auto res2 = applicative_functor<binary_op>::apply(functor<binary_op>::fmap(plus,pl3), m100);
+  auto res2 = applicative_functor<unary_op>::apply(functor<unary_op>::fmap(plus,pl3), m100);
   std::cout << " res2 : " << res2(5) << std::endl;
 
   return 0;

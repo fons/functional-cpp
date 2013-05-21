@@ -18,13 +18,14 @@ struct functor {
 
 //----------------------------- Implementation -----------------------
 #include "map.hpp"
-#include "binary_op.hpp"
+#include "unary_op.hpp"
 
 template <>
 struct functor<std::shared_ptr> {
+
   template<typename A, typename B>
   static std::function<std::shared_ptr<B> (std::shared_ptr<A>)>  fmap (std::function<B(A)> f) {
-    return [=](std::shared_ptr<A> v) {
+    return [f](std::shared_ptr<A> v) {
       if (v) {
 	return std::make_shared<B>(f(*v)); 
       }
@@ -34,7 +35,7 @@ struct functor<std::shared_ptr> {
 
   template<typename A, typename B, typename F>
   static std::function<std::shared_ptr<B> (std::shared_ptr<A>)>  fmap (F f) {
-    return [=](std::shared_ptr<A> v) {
+    return [f](std::shared_ptr<A> v) {
       if (v) {
 	return std::make_shared<B>(f(*v)); 
       }
@@ -47,7 +48,7 @@ template<> struct
 functor<std::forward_list> {
   template<typename A, typename B>
   static std::function < std::forward_list<B> (std::forward_list<A>)> fmap(std::function <B (A)> f) {
-    return [=] (std::forward_list<A> L) {
+    return [f] (std::forward_list<A> L) {
       return map<A,B>(f,L);
     };
   };
@@ -70,7 +71,7 @@ functor<std::list> {
 
   template<typename A, typename B>
   static std::function < std::list<B> (std::list<A>)> fmap(std::function <B (A)> f) {
-    return [=] (std::list<A> L) {
+    return [f] (std::list<A> L) {
       return map<A,B>(f,L);
     };
   };
@@ -89,30 +90,26 @@ functor<std::list> {
 
 
 template<>
-struct functor<binary_op>
+struct functor<unary_op>
 {
 
-  // This does not work
   template<typename A, typename B, typename R>
-  static std::function<std::function<B(R)> (std::function<A(R)>)> fmap (std::function<B(A)> f) {  
-    return [&](std::function<A(R)> g) -> std::function<B(R)> {
-      return [&] (R x)->B {
+  static auto  fmap (std::function<B(A)> f) {  
+    return [f](std::function<A(R)> g)  {
+      return [f,g] (R x) {
 	return f(g(x));
       };
     };
   };
 
-// this does
   template<typename A, typename B, typename R>
   static std::function<B (R)> fmap (std::function<B(A)> f, std::function<A(R)> g) {  
-    return [=](R x) -> B {
+    return [f,g](R x) -> B {
       return f(g(x));
     };
   };
 
 };
-
-//#include "mpc.hpp"
 
 
 #endif

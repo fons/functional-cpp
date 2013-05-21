@@ -3,21 +3,22 @@
 
 template <int n, typename F, typename T1, typename T2=T1, typename T3=T2, typename T4=T3, typename T5=T4>
 struct curry_helper {
-  auto operator()(F op);
+  //  auto operator()(F op);
+
 };
 
 template<typename F, typename T1>
 struct curry_helper<1,F,T1> {
-  auto operator() (F op) {
-    return [=] (T1 x) {return op(x);};
+  auto operator() (F op)  {
+    return [op] (T1 x) {return op(x);};
   }
 };
 
 template<typename F, typename T1, typename T2>
 struct curry_helper<2,F, T1,T2> {
   auto operator() (F op) {
-    return [=] (T1 x) {
-      return [=] (T2 y) {
+    return [op] (T1 x) {
+      return [op,x] (T2 y) {
 	return op(x,y);
       };
     };
@@ -27,9 +28,9 @@ struct curry_helper<2,F, T1,T2> {
 template<typename F, typename T1, typename T2, typename T3>
 struct curry_helper<3,F,T1,T2,T3> {
   auto operator() (F op) {
-    return [=] (T1 x) {
-      return [=] (T2 y) {
-	return [=] (T3 z) {
+    return [op] (T1 x) {
+      return [op,x] (T2 y) {
+	return [op,x,y] (T3 z) {
 	  return op(x,y,z);
 	};
       };
@@ -40,10 +41,10 @@ struct curry_helper<3,F,T1,T2,T3> {
 template<typename F, typename T1, typename T2, typename T3, typename T4>
 struct curry_helper<4,F,T1,T2,T3, T4> {
   auto operator() (F op) {
-    return [=] (T1 x) {
-      return [=] (T2 y) {
-	return [=] (T3 z) {
-	  return [=] (T4 w) {
+    return [op] (T1 x) {
+      return [op,x] (T2 y) {
+	return [op,x,y] (T3 z) {
+	  return [op,x,y,z] (T4 w) {
 	    return op(x,y,z,w);
 	  };
 	};
@@ -55,11 +56,11 @@ struct curry_helper<4,F,T1,T2,T3, T4> {
 template<typename F, typename T1, typename T2, typename T3, typename T4, typename T5>
 struct curry_helper<5,F,T1,T2,T3, T4, T5> {
   auto operator() (F op) {
-    return [=] (T1 x) {
-      return [=] (T2 y) {
-	return [=] (T3 z) {
-	  return [=] (T4 w) {
-	    return [=] (T5 p) {
+    return [op] (T1 x) {
+      return [op,x] (T2 y) {
+	return [op,x,y] (T3 z) {
+	  return [op,x,y,z] (T4 w) {
+	    return [op,x,y,z,w] (T5 p) {
 	      return op(x,y,z,w,p);
 	    };
 	  };

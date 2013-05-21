@@ -5,7 +5,7 @@
 template <typename R, typename T, typename U>
 std::function<std::function<R (U)> (T)> curry (std::function<R (T,U)> op)
 {
-  return [=] (T x) { return [=] (U y) {return op(x, y);};};
+  return [op] (T x) { return [op,x] (U y) {return op(x, y);};};
 }
 
 template <typename F, typename... args>

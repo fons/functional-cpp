@@ -63,16 +63,92 @@ escapeinside={\%*}{*)}          % if you want to add a comment within your code
 
 
 \begin{document}
-\title{$\lambda$ 's on the edge \\ Functional Programming in C++ part deux}
+\title{$\lambda$ 's on the edge \\ Advanced Functional Programming in C++}
 \author {Alfons Haffmans}
 \maketitle
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section* {Introduction}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-This is a continuation of a previous article in which I discussed support for fucntional programming built into C++.
+
+  
+Functional programming emphasizes the use of immutable data strsuctures and pure functions.
+However, this by itself does not capture all the complexity programmers encounter.
+The need to deal with state and IO are obvious examples.
+The extension of functional programming to handle those cases requires the introduction of concepts like functors, applicative functors and monads (why ??).
+
+
+Programming relies on the existence of side-effects.
+In the late '80's and early 90's an approach was pionereed that sought to incorporate impure features into so-called pure functional programming languages.
+That approach relied heavily on category theory and the concept of monads.
+Clearly C++ already supports impure features.
+Does it therefore make sense to incorporate that framework into the language ?
+
+
+In this article I investigated to what extend C++ can handle these concepts.
+In a previous article [..] I looked at what C++ supported out-of-box.
+None of the concepts I'm going to discuss are available in C++ or its standard libraries.
 In this article I'll be looking to extend C++ to support advanced functional concepts like functors, applicative functors and monads.
 
 
+I have taken a few approaches :
+I'm using Haskell's notation for function signatures and type classes.
+I'm using std::forward\_list as the standard list container. Extensions to either std::list or std::vector are trivial.
+
+In functional programming everything is a function.
+The output of a function is determined solely by its input.
+Computations generalize functions in that they can return more than a single value as a consequence of function application [moggi].
+This is done using concepts from category theory.
+This allows for the introduction of exceptions, side-effects and io if a functionla setting.
+
+Programmers deal with exceptions,side-effects and io all the time.
+
+For exqmple how would failure be handled in a functional setting ?
+
+A fairly straight forward approach would be to have the function return a pair.
+
+\begin{eqnarray*}
+f :: a \rightarrow \leftbracket bool \;,\; b\rightbracket
+\end{eqnarray*}
+The protocol would be to check the first member of the pair and it it's true, the second slot would contain a valid value.
+We can generalize this to any type class $M$ wich would represent the 'context' which contains the value we operate on.
+We can rewrite the above to be :
+\begin{eqnarray*}
+f :: a \rightarrow M b
+\end{eqnarray*}
+
+In fact, there are a few  ways to apply a function to a value in  context $M$:
+\begin{eqnarray*}
+fmap  &::& (a \rightarrow b) \rightarrow M\;a \rightarrow M \;b \\
+apply &::& M \; (a \rightarrow b) \rightarrow M\;a \rightarrow M \;b \\
+do    &::& M \; a \rightarrow (a \rightarrow M\; b) \rightarrow M \; b
+\end{eqnarray*}
+
+Note that in all cases the value remains within the context. 
+These are all higher-order functions.
+$fmap$ takes a function $a \rightarrow b$ and applies to a value of type $a$ in context $M$. 
+The result is a value of type $b$ in the same context.
+
+$apply$ uses a function $a \rightarrow b$ 'lifted' into the context $M$ and similarly applies it to a value in the context.
+Note that $apply$ requires $fmap$ to be implemented.
+
+Lastly $do$ has a slightly different order in the type signature for historical reasons. 
+It takes a value in a context, and feeds that value into the function $(a \rightarrow M\; b)$.
+Again $do$ immplies the existence of $apply$.
+
+These three functions more-or-less represent a more advanced way to look at functional programming.
+$fmap$ corresponds to mapping a function over a container of values.
+$apply$ is part of an applicative functor type class.
+It allows easier pipelining of functions working on values in contexts.
+$do$ is part of the monad type class. 
+It allows you to combine computations in the most flexible way.
+
+In addition to the type interface each implemtation needs to satisfy a number of laws.
+The justification for these laws is not so abvious from the intuitive introduction above.
+The justification for these laws and for the introduction of these functions can be found in abstract algebra and category theory.
+
+I'll investigate the implemention of functors, applicative functors and monads in C++.
+
+ 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
 \section*{Currying}
@@ -131,8 +207,8 @@ However writing a curry operator or writing curried versions of a function has b
 Functors generalize the concept of mapping a function over values in a container.
 Their typeclass is :
 \begin{eqnarray*}
-\mbox{class Functor f where} \\
-fmap :: (a \rightarrow b) -> f\;a \rightarrow f\;b
+\mbox{class Functor}\; &f& \mbox{where} \\
+fmap &::& (a \rightarrow b) \rightarrow f\;a \rightarrow f\;b
 \end{eqnarray*}
 
 In C++ this is defined in the template 
@@ -156,18 +232,109 @@ This allows specialization for containers since they have more than one template
 
 Useful functors satisfy the following laws
 \begin{eqnarray*}
-fmap \; id = id  \\
-fmap (g \; . \; f) = (fmap f) . (fmap f) 
+fmap \; id &=& id  \\
+fmap (g \; . \; f) &=& (fmap g) . (fmap f) 
 \end{eqnarray*}
 
-$.$ is the function composition operattor, read as $after$. It applies the function g after the fucntion f, viz.
+$.$ is the function composition operator, read as $after$. It applies the function g after the fucntion f, viz.
 \begin{eqnarray*}
 (g \; . \; f)(x) = g(f(x)) 
 \end{eqnarray*}
 
+The expressions in eq... are curried.
+$fmap \; id$ returns a function which takes a container as an argument. 
+The first law essentially says that that is the same thing as applying the id operator to the container itself.
+Note that the $id$ fuunction is polymorphic. 
+The $id$ functions on the left-hand side takes an value of type $a$ whereas the one on the right-hand side take a container of type $a$.
 
-\subsection{Lists}
+The second equation implies that the order ...... doesn't matter....
+
+\subsection*{Lists}
 For lists like $std::list$ and $std::foward\_list$ fmap corresponds to map.
+\begin{lstlisting}[caption=fmap, label=listing_fmap ]
+template <template<typename T1, typename... D> class F>
+struct functor {
+
+  //curried version
+  template<typename A, typename B>
+  static std::function < F<B> (F<A>)> fmap(std::function <B (A)> f);
+
+  // uncurried, for functions..
+  template<typename A, typename B>
+  static F<B> fmap(std::function <B (A)> f, F<A> L) {
+    return fmap(f)(L);
+  }
+};
+\end{lstlisting}
+
+
+\subsection*{pointers}
+
+In the case of pointer $fmap$ corresponds to derefencing the pointer.
+
+\begin{lstlisting}
+template <>
+struct functor<std::shared_ptr> {
+  template<typename A, typename B>
+  static std::function<std::shared_ptr<B> (std::shared_ptr<A>)>  fmap (std::function<B(A)> f) {
+    return [=](std::shared_ptr<A> v) {
+      if (v) {
+	return std::make_shared<B>(f(*v)); 
+      }
+      return  std::shared_ptr<B>(nullptr);
+    };
+  }
+
+  template<typename A, typename B, typename F>
+  static std::function<std::shared_ptr<B> (std::shared_ptr<A>)>  fmap (F f) {
+    return [=](std::shared_ptr<A> v) {
+      if (v) {
+	return std::make_shared<B>(f(*v)); 
+      }
+      return  std::shared_ptr<B>(nullptr);
+    };
+  }
+};
+\end{lstlisting}
+
+
+
+\subsection*{binary operators}
+
+\begin{lstlisting}[caption=binary operator, label=binop]
+template <typename A, typename B> struct binary_op {
+  
+};
+
+\end{lstlisting}
+
+The type in \ref{binop} coforms to the type required by functor.
+
+\begin{lstlisting}
+template<>
+struct functor<binary_op>
+{
+
+  // This does not work
+  template<typename A, typename B, typename R>
+  static std::function<std::function<B(R)> (std::function<A(R)>)> fmap (std::function<B(A)> f) {  
+    return [&](std::function<A(R)> g) -> std::function<B(R)> {
+      return [&] (R x)->B {
+	return f(g(x));
+      };
+    };
+  };
+
+// this does
+  template<typename A, typename B, typename R>
+  static std::function<B (R)> fmap (std::function<B(A)> f, std::function<A(R)> g) {  
+    return [=](R x) -> B {
+      return f(g(x));
+    };
+  };
+
+};
+\end{lstlisting}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

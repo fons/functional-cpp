@@ -43,7 +43,7 @@ int main(int argc, char **argv)
 						    ADD_FUNC(functor_1),
 						    ADD_FUNC(functor_2),
 						    ADD_FUNC(functor_3),
-						     //ADD_FUNC(functor_4),
+						    ADD_FUNC(functor_4),
 						    ADD_FUNC(functor_5),
 						    ADD_FUNC(functor_6),
 						    ADD_FUNC(functor_7),

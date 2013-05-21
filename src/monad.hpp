@@ -20,7 +20,7 @@ struct monad : public applicative_functor <F>
 template<> struct monad<std::forward_list> : public applicative_functor<std::forward_list> {
   template<typename A, typename B>
   static std::function < std::forward_list<B> (std::function< std::forward_list<B> (A) > ) > bind(std::forward_list<A> M) {
-    return [=](std::function<std::forward_list<B> (A)> f) {
+    return [M](std::function<std::forward_list<B> (A)> f) {
       std::forward_list<B> R;
       std::forward_list<std::forward_list<B>> res = map(f, M);
       for (auto& list : res) {
@@ -34,14 +34,14 @@ template<> struct monad<std::forward_list> : public applicative_functor<std::for
 
 //-----------------------------------------------------------------------------------------
 // 
-//  binary functions
+//  unary functions
 //
 template<>
-struct monad<binary_op> : public applicative_functor<binary_op> {
+struct monad<unary_op> : public applicative_functor<unary_op> {
 
   template <typename A, typename B, typename R>
   static std::function<R(A)> bind(std::function<B(A)> h, std::function < R (A,B)> f) {
-    return [=] (A x) {
+    return [f,h] (A x) {
       return f(h(x), x);
     };
   };

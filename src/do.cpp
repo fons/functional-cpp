@@ -143,12 +143,12 @@ int do_5 ()
   };
 
 
-  typedef applicative_functor<binary_op> apf_t;
+  typedef applicative_functor<unary_op> apf_t;
 
   auto pl10 = plus(10);
   auto m100 = mult(2);
 
-  auto C1  = functor<binary_op>::fmap(plus,pl10);
+  auto C1  = functor<unary_op>::fmap(plus,pl10);
   auto C2  = apf_t::apply(C1, m100);
 
   std::cout << " res2 : " << C2(3) << std::endl;

@@ -18,8 +18,8 @@ std::forward_list<std::tuple<A,B>> zip (const std::forward_list<A>& L, const std
 
 template<typename A, typename B, typename F>
 auto zipWith (F f) {
-  return [=](const std::forward_list<A>& L) {
-    return [=](const std::forward_list<B>& R) -> std::forward_list<decltype(f(A(),B()))> {
+  return [f](const std::forward_list<A>& L) {
+    return [f,L](const std::forward_list<B>& R) -> std::forward_list<decltype(f(A(),B()))> {
       std::forward_list<decltype(f(A(),B()))> H;
       std::transform(L.begin(), L.end(), R.begin(), std::front_inserter(H), f);
       H.reverse();

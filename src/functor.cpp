@@ -18,7 +18,7 @@ int functor_2()
 {
   std::function<int(int)> f = [=](int x) { return 3 * x;};
   std::function<int(int)> g = [=](int x) { return 100 + x;};
-  auto res = functor<binary_op>::fmap(f,g);
+  auto res = functor<unary_op>::fmap(f,g);
   std::cout << " res : " << res(1) << std::endl; 
   return 0;
 }
@@ -28,8 +28,8 @@ int functor_3()
   std::function<int(int)> f = [](int x) { return 3 * x;};
   std::function<int(int)> g = [](int x) { return 100 + x;};
   std::function<int(int)> h = [](int x) { return 5 * x - 700;};
-  auto r   = functor<binary_op>::fmap(f,g);
-  auto res = functor<binary_op>::fmap(h, r);
+  auto r   = functor<unary_op>::fmap(f,g);
+  auto res = functor<unary_op>::fmap(h, r);
   std::cout << " res : " << res(1) << std::endl; 
   return 0;
 }
@@ -38,7 +38,7 @@ int functor_4()
 {
   std::function<int(int)> f = [](int x) { return 3 * x;};
   std::function<int(int)> g = [](int x) { return 100 + x;};
-  auto res   = functor<binary_op>::fmap<int,int,int>(f)(g);
+  auto res   = functor<unary_op>::fmap<int,int,int>(f)(g);
 
   std::cout << " res : " << res(1) << std::endl; 
   return 0;
@@ -65,7 +65,7 @@ int functor_6()
 
   std::cout << " 3 + 9 : " << pl3(9) << std::endl;
 
-  auto r   = functor<binary_op>::fmap(plus,pl3);
+  auto r   = functor<unary_op>::fmap(plus,pl3);
   int v = r(0)(0) ;
   std::cout << " r (5) : " << v << std::endl;
   return 0;
