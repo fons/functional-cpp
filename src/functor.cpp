@@ -1,4 +1,5 @@
 #include "proto.hpp"
+#include "show.hpp"
 #include "w.hpp"
 #include "map.hpp"
 #include "functor.hpp"
@@ -20,6 +21,8 @@ int functor_2()
   std::function<int(int)> g = [=](int x) { return 100 + x;};
   auto res = functor<unary_op>::fmap(f,g);
   std::cout << " res : " << res(1) << std::endl; 
+  auto res1 = functor<unary_op>::fmap<int,decltype(f(int())),decltype(g(int()))>(f)(g);
+  std::cout << " res : " << res1(1) << std::endl; 
   return 0;
 }
 
@@ -78,5 +81,22 @@ int functor_7()
   std::function<int (W)> show =[](W w) { w.pp(std::cerr) << std::endl; return w.ssn();};
   functor<std::list>::fmap(show)(L);
 
+  return 0;
+}
+
+int functor_8()
+{
+  std::list<std::shared_ptr<W>> L = {std::shared_ptr<W>{new W(10, "a")}, std::shared_ptr<W>{new W(20, "b")}, std::shared_ptr<W>{new W(3467, "mnhjk")}};
+  auto F = functor<std::shared_ptr>::fmap(std::function<W (W)>([](const W& w) { w.pp(std::cerr) << std::endl; return w;}));
+  functor<std::list>::fmap(F, L);
+  return 0;
+}
+
+int functor_9()
+{
+  typedef std::tuple<int,std::string> C;
+  std::list<std::shared_ptr<C>> L = {std::shared_ptr<C>{new C(10, "a")}, std::shared_ptr<C>{new C(20, "b")}, std::shared_ptr<C>{new C(3467, "mnhjk")}};
+  auto F = functor<std::shared_ptr>::fmap(std::function<C (C)>([](const C& c) { std::cerr << c << std::endl; return c;}));
+  functor<std::list>::fmap(F, L);
   return 0;
 }

@@ -93,7 +93,7 @@ template<>
 struct functor<unary_op>
 {
 
-  template<typename A, typename B, typename R>
+  template<typename R, typename A, typename B>
   static auto  fmap (std::function<B(A)> f) {  
     return [f](std::function<A(R)> g)  {
       return [f,g] (R x) {

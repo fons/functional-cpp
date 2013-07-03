@@ -1,4 +1,5 @@
 #include "proto.hpp"
+#include "show.hpp"
 #include "w.hpp"
 #include "applicative_functor.hpp"
 
@@ -168,3 +169,13 @@ int apf_8()
   return 0;
 }
 
+int apf_9()
+{
+  typedef std::tuple<int,std::string> W;
+  std::forward_list<std::shared_ptr<W>> L = {std::shared_ptr<W>{new W(10, "a")}, std::shared_ptr<W>{new W(20, "b")}, std::shared_ptr<W>{new W(3467, "mnhjk")}};
+  std::function<W (W)> show =[](const W& w) { std::cerr << w << std::endl; return w;};
+  auto lifted_show = applicative_functor<std::forward_list>::pure(applicative_functor<std::shared_ptr>::apply(applicative_functor<std::shared_ptr>::pure(show)));
+  applicative_functor<std::forward_list>::apply(lifted_show)(L);
+
+  return 0;
+}

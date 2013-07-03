@@ -7,11 +7,11 @@ template <template<typename T1, typename... D> class F>
 struct applicative_functor : public functor <F>
 {
 
-  template <typename A> 
-  static F<A> pure(A val);
-
-  template<typename A, typename B>
-  static std::function < F<B> (F<A>)> apply(F <std::function<B(A)>> f );
+	template <typename A> 
+	static F<A> pure(A val);
+	
+	template<typename A, typename B>
+	static std::function < F<B> (F<A>)> apply(F <std::function<B(A)>> f );
 };
 
 template<>

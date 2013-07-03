@@ -3,7 +3,6 @@
 #include "show.hpp"
 
 
-
 template<typename A, typename F>
 auto mapM (F f, std::forward_list<A> L) -> decltype(f(A()))
 {

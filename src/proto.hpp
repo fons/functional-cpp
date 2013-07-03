@@ -11,14 +11,14 @@
 #include <string>
 #include <memory>
 
-extern int do_1();
-extern int do_2();
-extern int do_3();
-extern int do_4();
-extern int do_5();
-extern int do_6();
-extern int do_7();
-extern int do_8();
+extern int bracket_1();
+extern int bracket_2();
+extern int bracket_3();
+extern int bracket_4();
+extern int bracket_5();
+extern int bracket_6();
+extern int bracket_7();
+extern int bracket_8();
 
 extern int cur_1();
 
@@ -46,6 +46,8 @@ extern int functor_4();
 extern int functor_5();
 extern int functor_6();
 extern int functor_7();
+extern int functor_8();
+extern int functor_9();
 
 extern int apf_1();
 extern int apf_2();
@@ -55,6 +57,7 @@ extern int apf_5();
 extern int apf_6();
 extern int apf_7();
 extern int apf_8();
+extern int apf_9();
 
 extern int m_1();
 extern int m_2();
