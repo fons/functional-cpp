@@ -4,6 +4,8 @@
 \usepackage{setspace}
 \usepackage{color}
 \usepackage{listings}
+\usepackage{amssymb}
+\usepackage{bbm}
 \lstset{ %
 language=C++,                % choose the language of the code
 basicstyle=\footnotesize,       % the size of the fonts that are used for the code \footnotesize
@@ -107,7 +109,7 @@ For exqmple how would failure be handled in a functional setting ?
 A fairly straight forward approach would be to have the function return a pair.
 
 \begin{eqnarray*}
-f :: a \rightarrow \leftbracket bool \;,\; b\rightbracket
+f :: a \rightarrow [ bool \;,\; b ]
 \end{eqnarray*}
 The protocol would be to check the first member of the pair and it it's true, the second slot would contain a valid value.
 We can generalize this to any type class $M$ wich would represent the 'context' which contains the value we operate on.
@@ -197,30 +199,104 @@ It simplifies the design of higher order functions because we only have to consi
 C++ does not provide a curry operator and functions are not written in curried form. 
 Compare this to Haskell where functions are curried by default \cite{lipovaca, hutton}.
 However writing a curry operator or writing curried versions of a function has become a lot easier now that lambda's are supported.
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
 \section*{Functors}
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Functors generalize the concept of mapping a function over values in a container.
-Their typeclass is :
+Let's start with just a little category theory.
+Category theory is the study of algebras of functions.
+
+A category consists of objects and maps or arrows between the objects.
+The maps or arrows are functions which take a value from the domain and generate a value in the codomain.
+Maps can be composed to form another map.
+The composition operation is denoted as $(g \circ f)(x) = g(f(x))$ and is read as $g$ $after$ $f$.
+The  objects A,B,C,.. and maps f,g,h.. need to satisfy the following conditions :
+\begin{eqnarray*}
+f \circ id_{A} &=& id_{B} \circ f \\
+(h \circ g) \circ &=& h \circ (g \circ f)
+\end{eqnarray*}
+
+Think of a category as a combinations of concepts and relationships.
+Of particular interest are mappings between categories themselves.
+Mappings between categories are used to identify relationships between different sets of concepts.
+In this case we're trying to understand how to generalize the concepts of function and function combination.
+
+
+A very simple category is the monoid category $\Large \mathbbm{1}$.
+It consists of a single element $\star$ and the idenity $id$.
+It's domain and codomain are the same.
+We can construct maps and label them as $1_+, 2_+,..n_+..$.
+The composite of two maps is defined as $m_+ \circ n_+ = (n+m)_+$ so that $5_+ \circ 3_+ = 8_+$.
+
+We can interpret this construction by letting $\star$ correspond to $\mathbb{Z}$.
+Each map $n_+$ in the monoid corresponds to a map $f_n$ such that $f_n(x) = n + x$.
+It's easy to see that this correspondence respects function composition : $(f_m \circ f_n) (x) = f_m(f_n(x)) = m + n + x = f_{n+m}(x)$.
+$f_0$ is the identity operator.
+$f_n$ is the a curried $+$ operator. 
+Note that this interpreation of the monoid $\star$ is also a category. The single object is $\mathbb{Z}$ and the arrows are curried $+$ operators.
+What we have just defined is a mapping from one category (the monoid $(\star, n_+)$) to an other category : $(\mathbb{Z}, (n +))$.
+A mapping between categories is called a functor. 
+A functor $\mathcal{F}$ maps objects and arrows or maps from one category to an other:
+\begin{eqnarray*}
+\mathcal{F} (f : A \rightarrow B) &=& \mathcal{F}(f) : \mathcal{F}(A) \rightarrow \mathcal{F}(B) \\
+\mathcal{F}(id_A) &=& id_{\mathcal{F}(A)} \\
+\mathcal{F}(g \circ f) &=& \mathcal{F}(g) \circ \mathcal{F}(f)
+\end{eqnarray*}
+
+We can create an alternative interpretation using lists of integers of size n : $L_{n} = (a_1,...,a_{n}$. 
+A natural operation on lists is concatenation $\oplus$ which basicallt appends the elements of one list to the other.
+The identity element is the empty list $L_0$.
+The interpretation of the mappings $1_n$ is that of a curried concatenation to a list of size n $L_{n}$.
+Function combination is easily verified $(L_m \circ L_n)(x) = L_{m+n} (x)$.
+This interpretation satisfies the conditions of a functor between the monoid $(\star, n_+)$ and the monoid $(\mathcal{L},(L_n \oplus ))$.
+
+We can now also define a functor between the category $(\mathbb{Z}, f)$ and the category $(\mathcal{L}, (L_n \oplus)$.
+What that functor does is apply functions defined between elements of $\mathcal{Z}$ to computations involving lists of integers.
+The functor preserves the structure of the category of $(\mathbb{Z}, f)$.
+
+Can we construct a functor mapping between $(\mathbb{Z}, f)$ and $(\mathcal{L}, (L_n \oplus ))$ ?.
+The Functor $\mathcal{F}$ preserves the structure (what does that mean ??) of the category $(\mathbb{Z}, f)$ if it satifies :
+\begin{eqnarray*}
+\mathcal{F} \circ f = \mathcal{F}(f) \circ \mathcal{F} 
+\end{eqnarray*}
+A reasonable choice of $\mathcal{F}$ is $x \rightarrow [x]$ i.e. we map each element of $\mathbb{Z}$ to a single list.
+In that case we would have $(\mathcal{F} \circ f)(x) = \mathcal{F}(f(x)) = [f(x)]$.
+So that $\mathcal{F}(f) : [x] \rightarrow [f(x)]$.
+
+In other words the functor would apply the mapping (or function) $f : \mathbb{Z} \rightarrow \mathbb{Z}$ to the element in the list.
+It's easy to see that this mapping $\mathcal{F}$ satifies the requirement of a functor : $\mathcal{F} (id(x)) = [id(x)] = [x] = [] \oplus [x]$.
+
+
+I've obviously ignored a lot of details.
+That said , it's important to note that this approach relies strictly on statements about function composition.
+ 
+
+Functors in functional programming generalize the concept of mapping a function over values in a container of typeclass M.
+The typeclass in Haskell is :
 \begin{eqnarray*}
 \mbox{class Functor}\; &f& \mbox{where} \\
 fmap &::& (a \rightarrow b) \rightarrow f\;a \rightarrow f\;b
 \end{eqnarray*}
+The $fmap$ function generalizes the simple functor $\mathcal{F}$. 
+$fmap::a \rightarrow b$ corresponds to $\mathcal{F}(f)$.
+In terms of $fmap$ the functor requirements read 
+\begin{eqnarray*}
+fmap \; id &=& id  \\
+fmap (g \; \circ \; f) &=& (fmap \;g) \circ (fmap \;f) 
+\end{eqnarray*}
+$fmap \; id$ returns a function which takes a container as an argument.
+Note that the $id$ function on the left-hand side takes an value of type $a$ whereas the one on the right-hand side take a container of type $a$.
+
 
 In C++ this is defined in the template 
 \begin{lstlisting}
 template <template<typename T1, typename... D> class F>
 struct functor {
-
-  //curried version
   template<typename A, typename B>
   static std::function < F<B> (F<A>)> fmap(std::function <B (A)> f);
 
-  // uncurried, for functions..
   template<typename A, typename B>
   static F<B> fmap(std::function <B (A)> f, F<A> L) {
     return fmap(f)(L);
@@ -230,28 +306,11 @@ struct functor {
 The class F can have more than one template parameter, as indicated by the variadic template.
 This allows specialization for containers since they have more than one template parameter.
 
-Useful functors satisfy the following laws
-\begin{eqnarray*}
-fmap \; id &=& id  \\
-fmap (g \; . \; f) &=& (fmap g) . (fmap f) 
-\end{eqnarray*}
-
-$.$ is the function composition operator, read as $after$. It applies the function g after the fucntion f, viz.
-\begin{eqnarray*}
-(g \; . \; f)(x) = g(f(x)) 
-\end{eqnarray*}
-
-The expressions in eq... are curried.
-$fmap \; id$ returns a function which takes a container as an argument. 
-The first law essentially says that that is the same thing as applying the id operator to the container itself.
-Note that the $id$ fuunction is polymorphic. 
-The $id$ functions on the left-hand side takes an value of type $a$ whereas the one on the right-hand side take a container of type $a$.
-
-The second equation implies that the order ...... doesn't matter....
-
-\subsection*{Lists}
 For lists like $std::list$ and $std::foward\_list$ fmap corresponds to map.
-\begin{lstlisting}[caption=fmap, label=listing_fmap ]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{comment}
+\begin{lstlisting}[caption=fmap for , label=listing_fmap ]
 template <template<typename T1, typename... D> class F>
 struct functor {
 
@@ -266,13 +325,14 @@ struct functor {
   }
 };
 \end{lstlisting}
+\end{comment}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+A shared pointer is a container which holds a value of a particular type.
 
-\subsection*{pointers}
+An implementation of $fmap$ would return new shared pointer holding the result of the function applied to the value of the shed pointer.
 
-In the case of pointer $fmap$ corresponds to derefencing the pointer.
-
-\begin{lstlisting}
+\begin{lstlisting}[caption=shared pointer as container, label=shp]
 template <>
 struct functor<std::shared_ptr> {
   template<typename A, typename B>
@@ -297,38 +357,45 @@ struct functor<std::shared_ptr> {
 };
 \end{lstlisting}
 
-
-
-\subsection*{binary operators}
-
-\begin{lstlisting}[caption=binary operator, label=binop]
-template <typename A, typename B> struct binary_op {
-  
-};
-
+\begin{lstlisting}[caption=mapping over a list of shared pointers, label=ptrmap]
+  typedef std::tuple<int,std::string> C;
+  std::list<std::shared_ptr<C>> L = {std::shared_ptr<C>{new C(10, "a")}, std::shared_ptr<C>{new C(20, "b")}, std::shared_ptr<C>{new C(3467, "mnhjk")}};
+  auto F = functor<std::shared_ptr>::fmap(std::function<C (C)>([](const C& c) { std::cerr << c << std::endl; return c;}));
+  functor<std::list>::fmap(F, L);
+  return 0;
 \end{lstlisting}
 
-The type in \ref{binop} coforms to the type required by functor.
+Listing \ref{ptrmap} applies a function to a list of shared pointers using $fmap$.
+First I construct a list of shared pointer to a tuple of string and integer.
+I then create a function $F$ by partially applying $fmap$ for a shared pointer with the a lambda which prints the tuple to stdout.
+The lambda is written in terms of the tuple type.
+I have decoupled the container type from the value type.
+
+%%\begin{comment} 
+\begin{lstlisting}[caption=unary operator, label=unop]
+template <typename A, typename B> struct unary_op {
+  
+};
+\end{lstlisting}
+
+The type in \ref{unop} conforms to the type required by functor.
 
 \begin{lstlisting}
 template<>
-struct functor<binary_op>
+struct functor<unary_op>
 {
-
-  // This does not work
   template<typename A, typename B, typename R>
-  static std::function<std::function<B(R)> (std::function<A(R)>)> fmap (std::function<B(A)> f) {  
-    return [&](std::function<A(R)> g) -> std::function<B(R)> {
-      return [&] (R x)->B {
+  static auto  fmap (std::function<B(A)> f) {  
+    return [f](std::function<A(R)> g)  {
+      return [f,g] (R x) {
 	return f(g(x));
       };
     };
   };
 
-// this does
   template<typename A, typename B, typename R>
   static std::function<B (R)> fmap (std::function<B(A)> f, std::function<A(R)> g) {  
-    return [=](R x) -> B {
+    return [f,g](R x) -> B {
       return f(g(x));
     };
   };
@@ -336,12 +403,82 @@ struct functor<binary_op>
 };
 \end{lstlisting}
 
+A unary operator $\rightarrow$ constructs a unary function :$(\rightarrow) r\;a => (r \rightarrow a)$.
+So for a unary operator $M$ in $fmap$  would be $(\rightarrow) r$ and fmap :
+\begin{eqnarray*}
+fmap \; (a \rightarrow b) \rightarrow (r \rightarrow a) \rightarrow (r \rightarrow b)
+\end{eqnarray*}
+This corresponds to function composition.
+$fmap$ takes a function $(a\rightarrow b)$ and applies it $after$ function $(r \rightarrow a)$ to yield a function $(r \rightarrow b)$.
+
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
 \section*{Applicative Functors}
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Applicative functors have the following type class 
+\begin{eqnarray*}
+\mbox{class (Functor f)} &\Rightarrow& \mbox{Applicative f where} \\
+pure  &::& a \rightarrow f\;a \\
+(<\star>) &::& f \; ( a \rightarrow b) \rightarrow f \; a \rightarrow f\;b
+\end{eqnarray*}
+
+The applicative functor adds the infix operation $<\star>$ and operation $pure$ to those of the functor.
+In C++ we don't have the same leeway in  constructing functions names and fixity as we do in Haskell.
+I'll call $(<\star>)$ $apply$ and use it in prefix mode.
+
+The $apply$ or $<\star>$ operation of th applicative functor looks similar to $fmap$, except that the function $a \rightarrow b$ is inside the 'container' f.
+$pure$ puts a value of type $a$ into the container.
+
+There is a close relation ship between functors and applicative functors :
+\begin{eqnarray*}
+  fmap f x = pure f <*> x
+\end{eqnarray*} 
+I.e. lifting a function $f$ into an environment using $pure$ and applying to a value in a context is the same as using $fmap$ to apply $f$ directly.
+
+Applicative functors address an obvious limitation of functors: What if we wanted to apply a function to multiple effectful results ?
+
+\begin{lstlisting}[caption=applicative functor template in C++, label=apf_temp]
+template <template<typename T1, typename... D> class F> 
+struct applicative_functor : public functor <F>
+{
+
+  template <typename A> 
+  static F<A> pure(A val);
+
+  template<typename A, typename B>
+  static std::function < F<B> (F<A>)> apply(F <std::function<B(A)>> f );
+};
+\end{lstlisting}
+
+\ref{apf_temp} shows the applicative functor as a template in C++ and an implementation would be provided for each individual container.
+
+
+\begin{lstlisting}[caption=using an applicative functor to map over a list of shared pointers , label=apf_ptr_map]
+typedef std::tuple<int,std::string> W;
+  std::forward_list<std::shared_ptr<W>> L = {std::shared_ptr<W>{new W(10, "a")}, 
+                                             std::shared_ptr<W>{new W(20, "b")}, 
+                                             std::shared_ptr<W>{new W(3467, "mnhjk")}};
+  std::function<W (W)> show =[](const W& w) { std::cerr << w << std::endl; return w;};
+  auto lifted_show = applicative_functor<std::forward_list>::pure(applicative_functor<std::shared_ptr>::apply(applicative_functor<std::shared_ptr>::pure(show)));
+  applicative_functor<std::forward_list>::apply(lifted_show)(L);
+\end{lstlisting}
+
+In \ref{apf_ptr_map} an applicative functor is used to map the fucntion $show$ over a list of shared pointers to three tuples.
+The argument to show is a tuple; not a pointer to a tuple.
+First we 'lift' show into the $std::shared_ptr$ context, using $pure$.
+This gives us a shared pointer which contains $show$.
+We then partially apply $applicative_functor<std::shared_ptr>::apply$ with this lifted version.
+This is a function which takes a shared pointer as input and applies $show$ to its content.
+This function is now lifted into the $std::forward_list$ context, i.e. inserted into a list.
+This is then applied to the list of shared pointers.
+In fact it's the same result as \ref{ptrmap}.
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
