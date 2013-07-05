@@ -179,3 +179,77 @@ int apf_9()
 
   return 0;
 }
+
+
+template<typename A> using list_of_ptr = std::forward_list<std::shared_ptr<A>>;
+
+
+template <>
+struct functor<list_of_ptr> {
+
+  template<typename A, typename B>
+  static std::function<list_of_ptr<B> (list_of_ptr<A>)>  fmap (std::function<B(A)> f) {
+	  auto F = functor<std::shared_ptr>::fmap(f);
+	  return [F](list_of_ptr<A> L) {
+		  return functor<std::forward_list>::fmap(F, L);		  
+	  };
+  }
+
+  template<typename A, typename B, typename F>
+  static std::function<list_of_ptr<B> (list_of_ptr<A>)>  fmap (F f) {
+	  auto F = functor<std::shared_ptr>::fmap<A,B>(f);
+	  return [F](list_of_ptr<A> L) {
+		return functor<std::forward_list>::fmap(F, L);
+    };
+  }
+
+};
+
+template<> struct 
+applicative_functor<list_of_ptr> :public functor<list_of_ptr>{
+
+	template<typename A>
+	static list_of_ptr<A> pure(A v) {
+		auto y = applicative_functor<std::shared_ptr>::pure<A>(v);
+		return applicative_functor<std::forward_list>::pure<decltype(y)>(y);
+	}
+	/*  
+  template<typename A, typename B>
+  static std::function< list_of_ptr<B> (list_of_ptr<A>)> apply(list_of_ptr<std::function<B(A)>> F) {
+      return [F](list_of_ptr<A> L) {
+		  list_of_ptr<B> acc;
+		  for (auto& func : F) {
+			  for (auto& arg : L) {
+				  acc.push_front(func(arg));
+			  }
+		  } 
+		  acc.reverse();
+		  return acc;
+      };
+  };
+
+  template<typename A, typename B, typename lambda>
+  static std::function< list_of_ptr<B> (list_of_ptr<A>)> apply(list_of_ptr<lambda> F) {
+      return [F](list_of_ptr<A> L) {
+	list_of_ptr<B> acc;
+	for (auto& func : F) {
+	  for (auto& arg : L) {
+	    acc.push_front(func(arg));
+	  }
+	 } 
+	acc.reverse();
+	return acc;
+      };
+    };
+	*/
+};
+
+int apf_10()
+{
+	list_of_ptr<int> L = {std::make_shared<int>(5)};
+	auto f = [](const int& c) { std::cerr << c << std::endl; return c;};
+	functor<list_of_ptr>::fmap<int,int>(f)(L);
+	auto y = applicative_functor<list_of_ptr>::pure(45);
+	functor<list_of_ptr>::fmap<int,int>(f)(y);
+	return 0;
+}

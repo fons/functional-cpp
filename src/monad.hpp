@@ -9,7 +9,6 @@ struct monad : public applicative_functor <F>
 
   template<typename A, typename B>
   static std::function < F<B> (std::function< F<B> (A) > ) > bind(F<A> val);
-
   
 };
 //--------------------------------------- monad implementation-------------------------------
