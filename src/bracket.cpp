@@ -4,6 +4,7 @@
 #include "show.hpp"
 #include "curry.hpp"
 #include "bracket.hpp"
+#include "list_of_ptr.hpp"
 
 //ways to set up the bracket notation..
 
@@ -250,3 +251,15 @@ int bracket_8()
   return 0;
 }
 
+int bracket_9()
+{
+  typedef int         T1;
+  forward_list_of_ptr<T1> L1 = {std::make_shared<T1>(5),std::make_shared<T1>(15),std::make_shared<T1>(25),std::make_shared<T1>(35)};
+  auto f1 = [] (T1 a) { return std::make_tuple(a);};
+  auto R1  = bracket_helper<1,forward_list_of_ptr, decltype(f1), T1>::bracket(f1)(L1);
+
+
+  //auto R1 = bracket(f1, L1);
+  std::cout << R1 << std::endl;
+  return 0;
+}

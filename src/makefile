@@ -1,7 +1,7 @@
 GCC          = g++ 
 CLANG        = clang++
 CC           = $(GCC)
-CFLAGS       = -c -Wall -std=c++11
+CFLAGS       = -c -Wall -std=c++11 
 LDFLAGS      =
 
 LATEX        = pdflatex

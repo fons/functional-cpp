@@ -19,6 +19,7 @@ extern int bracket_5();
 extern int bracket_6();
 extern int bracket_7();
 extern int bracket_8();
+extern int bracket_9();
 
 extern int cur_1();
 

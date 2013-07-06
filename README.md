@@ -8,6 +8,9 @@ It builds on the availability of λ's and variadic templates (among other things
 
 One self-imposed limitation was to avoid `weird`syntax or to overload operators away from their semantics.
 
+The goal is to provide some examples of the us of functional techniques in C++ using existing language features and libraries. 
+
+This does not cover template meta-programming in case you were wondering.
 
 ### Why
 It's a great way to explore functional programming and C++, neither of which are well served by this approach.
@@ -40,14 +43,38 @@ pp-fp-1.tex discusses basic functional programming available in C++. pp-fp-2.tex
 pp-fp-1.tex was submitted to pragpub for publication.
 
 ### Related Work
+I've been able to track down two articles which discuss functional programming in C++.
 
-## Basic Functional Programming
+1. Work by Yannis and McNamara circa early 2000 <http://people.cs.umass.edu/~yannis/fc++/> 
+2. Work by David Sankel circa 2010. <http://zao.se/~zao/boostcon/10/2010_presentations/thu/funccpp.pdf>
+
+Yannis and McNamara develop a library using C++ as it existed circa 2000. Interesting, but you need to stay within their framework.
+
+Sankel uses boost to implement advanced functional programming concepts in C++.
+
+## Functional Programming
+
+### Basics
+
+### Advanced
 
 #### Functors
+
 #### Applicative Functors
+
+#### Bracket Notation
 
 #### Monads
 
 ### Helpful Hints
+
+#### Books
+
+##### C++
+
+##### Functional Programming
+
+#### Articles
+
 
 

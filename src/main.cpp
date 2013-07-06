@@ -17,6 +17,7 @@ int main(int argc, char **argv)
 						     ADD_FUNC(bracket_6),
 						     ADD_FUNC(bracket_7),
 						     ADD_FUNC(bracket_8),
+						     ADD_FUNC(bracket_9),
 						     ADD_FUNC(cur_1),
 						     ADD_FUNC(mpc_1),
 						     ADD_FUNC(mpc_2),
