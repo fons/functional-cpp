@@ -250,16 +250,22 @@ int bracket_8()
 
   return 0;
 }
+template <typename F, template<typename Tx, typename... D> class Cont, typename... T> 
+auto bracket_alt (F f, Cont<T>... L) 
+{
+  auto cf = curry<decltype(f), T...  >(f);	
+  //return bracket_helper<sizeof...(T), Cont , decltype(cf), T...>::bracket(cf, L...);
+} 
 
 int bracket_9()
 {
   typedef int         T1;
   forward_list_of_ptr<T1> L1 = {std::make_shared<T1>(5),std::make_shared<T1>(15),std::make_shared<T1>(25),std::make_shared<T1>(35)};
-  auto f1 = [] (T1 a) { return std::make_tuple(a);};
-  auto R1  = bracket_helper<1,forward_list_of_ptr, decltype(f1), T1>::bracket(f1)(L1);
-
-
-  //auto R1 = bracket(f1, L1);
+  auto f1  = [] (T1 a) { return std::make_tuple(a);};
+  auto cf  = curry<decltype(f1), T1  >(f1);
+  auto R1  = bracket_helper<1,forward_list_of_ptr, decltype(cf), T1>::bracket(cf)(L1);
+  //  auto R1 = 
+  //bracket_alt(f1, L1);
   std::cout << R1 << std::endl;
   return 0;
 }

@@ -56,6 +56,22 @@ Sankel uses boost to implement advanced functional programming concepts in C++.
 
 ### Basics
 
+#### Immutability
+
+#### Higher Order Functions
+Combine functions to construct other functions
+
+#### Currying
+
+Turn any function into a unary higher order function
+
+#### Map
+
+Apply a function to a list of values
+
+#### Reduce
+
+
 ### Advanced
 
 #### Functors
@@ -71,6 +87,8 @@ Sankel uses boost to implement advanced functional programming concepts in C++.
 #### Books
 
 ##### C++
+
+1. [The C++ Standard Library; 2nd edition](http://www.cppstdlib.com/)
 
 ##### Functional Programming
 
