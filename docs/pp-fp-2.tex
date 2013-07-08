@@ -468,7 +468,7 @@ typedef std::tuple<int,std::string> W;
   applicative_functor<std::forward_list>::apply(lifted_show)(L);
 \end{lstlisting}
 
-In \ref{apf_ptr_map} an applicative functor is used to map the fucntion $show$ over a list of shared pointers to three tuples.
+In \ref{apf_ptr_map} an applicative functor is used to map the function $show$ over a list of shared pointers to three tuples.
 The argument to show is a tuple; not a pointer to a tuple.
 First we 'lift' show into the $std::shared_ptr$ context, using $pure$.
 This gives us a shared pointer which contains $show$.

@@ -3,6 +3,7 @@
 #include "w.hpp"
 #include "applicative_functor.hpp"
 #include "list_of_ptr.hpp"
+#include "zip_list.hpp"
 
 int apf_1()
 {
@@ -192,3 +193,18 @@ int apf_10()
     applicative_functor<forward_list_of_ptr>::apply<int,int>(lifted_lambda)(y);
     return 0;
 }
+
+int apf_11()
+{
+	zip_list<int> L = {2, 5, 10};
+
+	auto f = [](const int& c) { std::cerr << c << std::endl; return c;};
+	functor<zip_list>::fmap<int,int>(f)(L);
+	auto y = applicative_functor<zip_list>::pure(45);
+	auto lifted_lambda = applicative_functor<zip_list>::pure(f);
+	applicative_functor<zip_list>::apply<int,int>(lifted_lambda)(L);
+	applicative_functor<zip_list>::apply<int,int>(lifted_lambda)(y);
+
+    return 0;
+}
+

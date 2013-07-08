@@ -61,6 +61,7 @@ int main(int argc, char **argv)
 						    ADD_FUNC(apf_8),
 						    ADD_FUNC(apf_9),
 						    ADD_FUNC(apf_10),
+						    ADD_FUNC(apf_11),
 						    ADD_FUNC(m_1),
 						    ADD_FUNC(m_2),
 						    ADD_FUNC(m_3),

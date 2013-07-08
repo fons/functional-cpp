@@ -60,6 +60,7 @@ extern int apf_7();
 extern int apf_8();
 extern int apf_9();
 extern int apf_10();
+extern int apf_11();
 
 extern int m_1();
 extern int m_2();
