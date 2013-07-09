@@ -85,6 +85,10 @@ functor<std::list> {
   static auto fmap(F f, std::list<A> L) -> std::list<decltype(f(A()))> {
     return map<A,F>(f, L);
   };
+	template<typename A, typename B, typename F>
+	static auto fmap(F f, std::list<A> L) -> std::list<B> {
+		return map<A,B,F>(f, L);
+  };
 
 };
 

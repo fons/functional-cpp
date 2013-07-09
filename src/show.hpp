@@ -4,7 +4,7 @@
 template<typename T>
 std::ostream& operator<<(std::ostream& strm, const std::forward_list<T>& L) 
 {
-  strm << "forward_list<" << typeid(T).name() << "> [";
+  strm << "std::forward_list<" << typeid(T).name() << "> [";
   size_t index = 7;
   for (auto& v : L) {
     strm << v << ",";
@@ -14,6 +14,21 @@ std::ostream& operator<<(std::ostream& strm, const std::forward_list<T>& L)
   }
   return strm << "]";
 }
+
+template<typename T>
+std::ostream& operator<<(std::ostream& strm, const std::list<T>& L) 
+{
+  strm << "std::list<" << typeid(T).name() << "> [";
+  size_t index = 7;
+  for (auto& v : L) {
+    strm << v << ",";
+    if (index % 10 == 0) {
+      strm<< std::endl;
+    }
+  }
+  return strm << "]";
+}
+
 //from Josuttis : The c++ standard library 2nd edition 
 
 template <int i, int MAX, typename... args>

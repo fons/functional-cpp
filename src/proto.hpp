@@ -20,6 +20,8 @@ extern int bracket_6();
 extern int bracket_7();
 extern int bracket_8();
 extern int bracket_9();
+extern int bracket_10();
+extern int bracket_11();
 
 extern int cur_1();
 
@@ -61,6 +63,7 @@ extern int apf_8();
 extern int apf_9();
 extern int apf_10();
 extern int apf_11();
+extern int apf_12();
 
 extern int m_1();
 extern int m_2();

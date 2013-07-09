@@ -4,7 +4,7 @@
 #include "bracket_helper.hpp"
 
 
-template <typename F, template<typename Tx, typename... D> class Cont, typename... T> 
+template <template<typename Tx, typename... D> class Cont, typename F, typename... T> 
 auto bracket (F f, Cont<T>... L) 
 {
 	auto cf = curry<decltype(f), T...  >(f);	

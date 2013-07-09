@@ -1,7 +1,7 @@
 #ifndef h__ziplist__h
 #define h__ziplist__h
 
-template<typename A> using zip_list = std::forward_list<A>;
+template<typename A> using zip_list = std::list<A>;
 
 template <>
 struct functor<zip_list> {
@@ -9,7 +9,7 @@ struct functor<zip_list> {
   template<typename A, typename B>
   static std::function<zip_list<B> (zip_list<A>)>  fmap (std::function<B(A)> f) {
 	  return [f](zip_list<A> L) {
-		  return functor<std::forward_list>::fmap<A,B>(f, L);		  
+		  return functor<std::list>::fmap<A,B>(f, L);		  
 	  };
   }
 
@@ -17,7 +17,7 @@ struct functor<zip_list> {
   template<typename A, typename B, typename F>
   static std::function<zip_list<B> (zip_list<A>)>  fmap (F f) {
 	  return [f](zip_list<A> L) {
-		  return functor<std::forward_list>::fmap<A,B,F>(f, L);
+		  return functor<std::list>::fmap<A,B,F>(f, L);
 	  };
   };
 
@@ -28,7 +28,7 @@ applicative_functor<zip_list> :public functor<zip_list>{
 
     template<typename A>
     static zip_list<A> pure(A v) {
-		return applicative_functor<std::forward_list>::pure<decltype(v)>(v);
+		return applicative_functor<std::list>::pure<decltype(v)>(v);
     }
 
     template<typename A, typename B>
