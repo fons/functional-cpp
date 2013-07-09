@@ -71,14 +71,21 @@ Apply a function to a list of values
 
 #### Reduce
 
+Apply a function to a list of values and accumulate the result.
 
 ### Advanced
 
 #### Functors
 
+Generalizes maps for data "containers" other than lists.
+
 #### Applicative Functors
 
+Enables pure functions to be used in a "container"
+
 #### Bracket Notation
+
+
 
 #### Monads
 
@@ -88,9 +95,12 @@ Apply a function to a list of values
 
 ##### C++
 
-1. [The C++ Standard Library; 2nd edition](http://www.cppstdlib.com/)
+1. [The C++ Programming Language; 4th ed.](http://www.stroustrup.com/4th.html)
+2. [The C++ Standard Library; 2nd ed.](http://www.cppstdlib.com/)
+
 
 ##### Functional Programming
+
 
 #### Articles
 

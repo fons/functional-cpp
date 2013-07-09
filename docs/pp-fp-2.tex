@@ -91,7 +91,6 @@ In a previous article [..] I looked at what C++ supported out-of-box.
 None of the concepts I'm going to discuss are available in C++ or its standard libraries.
 In this article I'll be looking to extend C++ to support advanced functional concepts like functors, applicative functors and monads.
 
-
 I have taken a few approaches :
 I'm using Haskell's notation for function signatures and type classes.
 I'm using std::forward\_list as the standard list container. Extensions to either std::list or std::vector are trivial.
@@ -334,24 +333,24 @@ An implementation of $fmap$ would return new shared pointer holding the result o
 
 \begin{lstlisting}[caption=shared pointer as container, label=shp]
 template <>
-struct functor<std::shared_ptr> {
+struct functor<std::shared\_ptr> {
   template<typename A, typename B>
-  static std::function<std::shared_ptr<B> (std::shared_ptr<A>)>  fmap (std::function<B(A)> f) {
-    return [=](std::shared_ptr<A> v) {
+  static std::function<std::shared\_ptr<B> (std::shared\_ptr<A>)>  fmap (std::function<B(A)> f) {
+    return [=](std::shared\_ptr<A> v) {
       if (v) {
 	return std::make_shared<B>(f(*v)); 
       }
-      return  std::shared_ptr<B>(nullptr);
+      return  std::shared\_ptr<B>(nullptr);
     };
   }
 
   template<typename A, typename B, typename F>
-  static std::function<std::shared_ptr<B> (std::shared_ptr<A>)>  fmap (F f) {
-    return [=](std::shared_ptr<A> v) {
+  static std::function<std::shared\_ptr<B> (std::shared\_ptr<A>)>  fmap (F f) {
+    return [=](std::shared\_ptr<A> v) {
       if (v) {
 	return std::make_shared<B>(f(*v)); 
       }
-      return  std::shared_ptr<B>(nullptr);
+      return  std::shared\_ptr<B>(nullptr);
     };
   }
 };
@@ -359,8 +358,8 @@ struct functor<std::shared_ptr> {
 
 \begin{lstlisting}[caption=mapping over a list of shared pointers, label=ptrmap]
   typedef std::tuple<int,std::string> C;
-  std::list<std::shared_ptr<C>> L = {std::shared_ptr<C>{new C(10, "a")}, std::shared_ptr<C>{new C(20, "b")}, std::shared_ptr<C>{new C(3467, "mnhjk")}};
-  auto F = functor<std::shared_ptr>::fmap(std::function<C (C)>([](const C& c) { std::cerr << c << std::endl; return c;}));
+  std::list<std::shared\_ptr<C>> L = {std::shared\_ptr<C>{new C(10, "a")}, std::shared\_ptr<C>{new C(20, "b")}, std::shared\_ptr<C>{new C(3467, "mnhjk")}};
+  auto F = functor<std::shared\_ptr>::fmap(std::function<C (C)>([](const C& c) { std::cerr << c << std::endl; return c;}));
   functor<std::list>::fmap(F, L);
   return 0;
 \end{lstlisting}
@@ -457,26 +456,41 @@ struct applicative_functor : public functor <F>
 
 \ref{apf_temp} shows the applicative functor as a template in C++ and an implementation would be provided for each individual container.
 
+\subsection*{list and ziplist}
 
-\begin{lstlisting}[caption=using an applicative functor to map over a list of shared pointers , label=apf_ptr_map]
-typedef std::tuple<int,std::string> W;
-  std::forward_list<std::shared_ptr<W>> L = {std::shared_ptr<W>{new W(10, "a")}, 
-                                             std::shared_ptr<W>{new W(20, "b")}, 
-                                             std::shared_ptr<W>{new W(3467, "mnhjk")}};
-  std::function<W (W)> show =[](const W& w) { std::cerr << w << std::endl; return w;};
-  auto lifted_show = applicative_functor<std::forward_list>::pure(applicative_functor<std::shared_ptr>::apply(applicative_functor<std::shared_ptr>::pure(show)));
-  applicative_functor<std::forward_list>::apply(lifted_show)(L);
+\begin{lstlisting}[caption=std::forward\_list is an applicative functor, label=fwd_list_functor]
+template<> struct 
+applicative_functor<std::forward_list> :public functor<std::forward_list>{
+
+  template<typename A>
+  static std::forward_list<A> pure(A v) {
+    std::forward_list<A> L;
+    L.push_front(v);
+    return L;
+  }
+  
+[...]
+  template<typename A, typename B, typename lambda>
+  static std::function< std::forward_list<B> (std::forward_list<A>)> apply(std::forward_list<lambda> F) {
+      return [F](std::forward_list<A> L) {
+	std::forward_list<B> acc;
+	for (auto& func : F) {
+	  for (auto& arg : L) {
+	    acc.push_front(func(arg));
+	  }
+	 } 
+	acc.reverse();
+	return acc;
+      };
+    };
+
+};
+
 \end{lstlisting}
 
-In \ref{apf_ptr_map} an applicative functor is used to map the function $show$ over a list of shared pointers to three tuples.
-The argument to show is a tuple; not a pointer to a tuple.
-First we 'lift' show into the $std::shared_ptr$ context, using $pure$.
-This gives us a shared pointer which contains $show$.
-We then partially apply $applicative_functor<std::shared_ptr>::apply$ with this lifted version.
-This is a function which takes a shared pointer as input and applies $show$ to its content.
-This function is now lifted into the $std::forward_list$ context, i.e. inserted into a list.
-This is then applied to the list of shared pointers.
-In fact it's the same result as \ref{ptrmap}.
+\subsection*{list of pointers}
+
+\subsection*{brackets}
 
 
 
