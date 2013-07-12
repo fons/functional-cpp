@@ -65,11 +65,21 @@ int main(int argc, char **argv)
 						    ADD_FUNC(apf_10),
 						    ADD_FUNC(apf_11),
 						    ADD_FUNC(apf_12),
+						    ADD_FUNC(m_0),
 						    ADD_FUNC(m_1),
 						    ADD_FUNC(m_2),
 						    ADD_FUNC(m_3),
 						    ADD_FUNC(m_4),
-						    ADD_FUNC(m_5)};  
+							ADD_FUNC(m_5),
+							ADD_FUNC(m_6),
+							ADD_FUNC(m_7),
+							ADD_FUNC(m_8),
+							ADD_FUNC(m_9),
+							ADD_FUNC(m_10),
+							ADD_FUNC(m_11),
+							ADD_FUNC(m_12),
+							ADD_FUNC(m_13),
+						    ADD_FUNC(m_14)};  
 
   auto show_all = [=] (const std::string& ps)  {       
     size_t count = 1;

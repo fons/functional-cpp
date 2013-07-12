@@ -65,11 +65,21 @@ extern int apf_10();
 extern int apf_11();
 extern int apf_12();
 
+extern int m_0();
 extern int m_1();
 extern int m_2();
 extern int m_3();
 extern int m_4();
 extern int m_5();
+extern int m_6();
+extern int m_7();
+extern int m_8();
+extern int m_9();
+extern int m_10();
+extern int m_11();
+extern int m_12();
+extern int m_13();
+extern int m_14();
 
 extern int w_1();
 
