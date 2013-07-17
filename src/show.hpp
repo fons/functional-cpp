@@ -28,6 +28,11 @@ std::ostream& operator<<(std::ostream& strm, const std::list<T>& L)
   }
   return strm << "]";
 }
+template <typename T, typename U>
+std::ostream& operator<<(std::ostream& strm, const std::pair<T,U>& p) 
+{
+	return strm << "(" << p.first << "," << p.second << ")";
+}
 
 //from Josuttis : The c++ standard library 2nd edition 
 

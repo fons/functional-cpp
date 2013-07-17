@@ -2,7 +2,6 @@
 #define H__MONAD__H
 #include "applicative_functor.hpp"
 
-
 template <template<typename T1, typename... D> class F> 
 struct monad : public applicative_functor <F>
 {

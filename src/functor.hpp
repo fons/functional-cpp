@@ -6,7 +6,7 @@ template <template<typename T1, typename... D> class F>
 struct functor {
 
   //curried version
-  template<typename A, typename B>
+	template<typename A, typename B>
   static std::function < F<B> (F<A>)> fmap(std::function <B (A)> f);
 
   // uncurried, for functions..

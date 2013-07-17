@@ -1,5 +1,5 @@
-#ifndef __applicative_functor__
-#define __applicative_functor__
+#ifndef h__applicative_functor__h
+#define h__applicative_functor__h
 
 #include "functor.hpp"
 
