@@ -39,4 +39,41 @@ struct functor<state> {
 
 };
 
+template <>
+struct applicative_functor<state> : public functor <state>
+{
+
+	template <typename S, typename A> static  state<A,S> pure(A val) {
+		state_computation<A,S> comp =[val](S s) {
+			return state_tuple<A, S>(val, s);
+		};
+		state <A, S> ST(comp);
+		return ST;	
+	}
+	
+	template<typename S, typename A, typename B>
+	static state<B,S> apply ( state<std::function<B(A)>, S> F, state<A,S> M) {
+		
+		state_computation<B,S> comp =[F,&M](S s) {
+			auto rs1  = runState(F, s);
+			auto resv = rs1.value();
+			if (resv.second) {
+				std::function<B(A)> f = resv.first;
+				auto MT         = functor<state>::fmap<S,A,B>(f, M);
+				auto rs2        = runState(MT, s);
+				auto value      = rs2.value();
+				auto new_state  = rs2.state().first;
+				if (value.second) {
+					return state_tuple<B, S>(value.first, new_state);
+				}
+				return state_tuple<B, S>(new_state);
+			}
+			return state_tuple<B, S>(s); 
+		};
+		state <B, S> ST(comp);
+		return ST;	
+	}
+
+};
+
 #endif

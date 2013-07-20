@@ -2,74 +2,14 @@
 #include "show.hpp"
 #include "functor.hpp"
 #include "applicative_functor.hpp"
+#include "monad.hpp"
 #include "state_monad.hpp"
+
 
 typedef state_computation<int, std::list<int>> stack_comp;
 typedef std::list<int>  istack;
 
 
-template <>
-struct applicative_functor<state> : public functor <state>
-{
-
-	template <typename A, typename S> static  state<A,S> pure(A val) {
-		state_computation<A,S> comp =[val](S s) {
-			return state_tuple<A, S>(val, s);
-		};
-		state <A, S> ST(comp);
-		return ST;	
-	}
-	
-	template<typename S, typename A, typename B>
-	static state<B,S> apply ( std::function<B(A)> F, state<A,S> M) {
-		state_computation<B,S> comp =[F,&M](S s) {
-			auto res       = runState(F, s);
-			auto resv      = res.value();
-			if (resv.second) {
-				auto f = resv.first;
-				auto st = functor<state>::fmap<A,S>(f, M);
-				return st;
-			}
-			return state_tuple<B, S>(s); 
-		};
-		state <B, S> ST(comp);
-		return ST;	
-	}
-
-};
-
-int stm_3()
-{
-	istack L = {1,2,3,4};
-
-	std::function<char(int)> f = [] (int i) {
-		if (i < 3) {
-			return 'A';
-		}
-		return 'Z';
-	};
-
-	auto F = applicative_functor<state>::pure<int, istack>(f);
-	std::cerr << F << std::endl;
-
-	//auto S = runState(ST, L);
-	//std::cerr << S << std::endl;;
-
-	return 0;
-}
-
-int stm_2()
-{
-	istack L = {1,2,3,4};
-
-	auto ST = applicative_functor<state>::pure<int, istack>(5);
-	std::cerr << ST << std::endl;
-
-	auto S = runState(ST, L);
-	std::cerr << S << std::endl;;
-
-	return 0;
-}
 
 int stm_0()
 {
@@ -150,6 +90,140 @@ int stm_1()
 	auto st = runState(SPT, L);
 	std::cerr << st << std::endl;
 	
+	return 0;
+}
+
+int stm_2()
+{
+	istack L = {1,2,3,4};
+	
+	auto ST = applicative_functor<state>::pure<istack>(5);
+	std::cerr << ST << std::endl;
+	
+	auto S = runState(ST, L);
+	std::cerr << S << std::endl;;
+
+	return 0;
+}
+
+
+int stm_3()
+{
+	istack L = {1,2,3,4};
+	
+	std::function<char(int)> f = [] (int i) {
+		if (i < 3) {
+			return 'A';
+		}
+		return 'Z';
+	};
+
+	stack_comp pop = [] (istack s) {
+		auto val = s.front();
+		s.pop_front();
+		return state_tuple<int, istack>(val, s);
+	};
+	
+	state <int, istack> SM(pop);
+
+	auto F = applicative_functor<state>::pure<istack>(f);
+	std::cerr << F << std::endl;
+
+	auto r1 = runState(SM, L);
+	std::cerr << r1 << std::endl;;
+	auto SC = applicative_functor<state>::apply<istack, int, char>(F, SM);
+	auto r2 = runState(SC, L);
+	std::cerr << r2 << std::endl;;
+
+	return 0;
+}
+
+template<> struct monad<state> : public applicative_functor<state> {
+	
+	template<typename S, typename A, typename B>
+	static std::function < state<B,S> (std::function< state<B,S> (A) > ) > bind(state<A,S> M) {
+		return [M](std::function<state<B,S> (A)> f) {
+			state_computation<B,S> comp =[f,&M](S s) {
+				auto res  = runState(M, s);
+				auto valr = res.value();
+				if (valr.second) {
+					A a         = valr.first;
+					S new_state = res.state().first;
+					state<B,S> state_g   = f (a);
+					return runState(state_g, new_state);
+				}
+				return state_tuple<B, S>(s);
+			};
+			return state<B,S> (comp);
+		};
+	}
+
+	template<typename S, typename A, typename B>
+	static state<B,S> bind(state<A,S> M, std::function< state<B,S> (A)> f) {
+		state_computation<B,S> comp =[f,&M](S s) {
+			auto res  = runState(M, s);
+			auto valr = res.value();
+			if (valr.second) {
+				A a         = valr.first;
+				S new_state = res.state().first;
+				state<B,S> state_g   = f (a);
+				return runState(state_g, new_state);
+			}
+			return state_tuple<B, S>(s);
+		};
+		return state<B,S> (comp);
+	}
+	
+	template <typename S, typename A> static state<A,S> mreturn (A val) {
+		return applicative_functor<state>::pure<S,A>(val);
+	}
+
+};
+
+
+int stm_4()
+{
+	istack L = {1,2,3,4};
+
+
+	std::function< state<int, istack> (int)> f = [] (int v) {
+		std::function<stack_comp(int)> push = [](int val) {
+			return [val] (istack s) {
+				s.push_front(val);
+				return state_tuple<int, istack>(s);
+			};
+		};
+		std::cerr << "v : " << v << std::endl;
+		if (v > 3) {
+			state <int, istack> SP(push(v));		
+			return SP;
+		}
+		stack_comp pop = [] (istack s) {
+			auto val = s.front();
+			s.pop_front();
+			return state_tuple<int, istack>(val, s);
+		};
+		state <int, istack> SP(pop);		
+		return SP;
+	};
+
+	stack_comp pop = [] (istack s) {
+		auto val = s.front();
+		s.pop_front();
+		return state_tuple<int, istack>(val, s);
+	};
+	
+	state <int, istack> SM(pop);
+
+	auto R = monad<state>::bind<istack,int,int>(SM, f);
+	std::cerr << R << std::endl;
+
+	auto r0 = runState(SM, istack{1,4,5,3,1,8});
+	std::cerr << r0 << std::endl;
+
+	auto r1 = runState(R, istack{1,4,5,3,1,8});
+	std::cerr << r1 << std::endl;
+
 	return 0;
 }
 

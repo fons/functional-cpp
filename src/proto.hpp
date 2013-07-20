@@ -18,6 +18,8 @@ extern int st_1();
 extern int stm_0();
 extern int stm_1();
 extern int stm_2();
+extern int stm_3();
+extern int stm_4();
 
 
 extern int bracket_1();
