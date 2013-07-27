@@ -2,6 +2,7 @@
 #include "show.hpp"
 #include "functor.hpp"
 #include "applicative_functor.hpp"
+#include "state.hpp"
 #include "monad.hpp"
 #include "state_monad.hpp"
 
@@ -139,41 +140,25 @@ int stm_3()
 }
 
 template<> struct monad<state> : public applicative_functor<state> {
-	
-	template<typename S, typename A, typename B>
-	static std::function < state<B,S> (std::function< state<B,S> (A) > ) > bind(state<A,S> M) {
-		return [M](std::function<state<B,S> (A)> f) {
-			state_computation<B,S> comp =[f,&M](S s) {
-				auto res  = runState(M, s);
-				auto valr = res.value();
-				if (valr.second) {
-					A a         = valr.first;
-					S new_state = res.state().first;
-					state<B,S> state_g   = f (a);
-					return runState(state_g, new_state);
-				}
-				return state_tuple<B, S>(s);
-			};
-			return state<B,S> (comp);
-		};
-	}
 
 	template<typename S, typename A, typename B>
-	static state<B,S> bind(state<A,S> M, std::function< state<B,S> (A)> f) {
-		state_computation<B,S> comp =[f,&M](S s) {
+	static state<B,S> bind(state<A,S>& M, std::function< state<B,S> (A)>& f) {
+		state_computation<B,S> comp =[&f,&M](S s) {
 			auto res  = runState(M, s);
 			auto valr = res.value();
-			if (valr.second) {
+			if (1==1) {
 				A a         = valr.first;
 				S new_state = res.state().first;
 				state<B,S> state_g   = f (a);
-				return runState(state_g, new_state);
+				state_tuple<B,S> ns = runState(state_g, new_state);
+				return ns;
 			}
 			return state_tuple<B, S>(s);
 		};
+		
 		return state<B,S> (comp);
-	}
-	
+	};
+
 	template <typename S, typename A> static state<A,S> mreturn (A val) {
 		return applicative_functor<state>::pure<S,A>(val);
 	}
@@ -187,22 +172,26 @@ int stm_4()
 
 
 	std::function< state<int, istack> (int)> f = [] (int v) {
+
 		std::function<stack_comp(int)> push = [](int val) {
 			return [val] (istack s) {
 				s.push_front(val);
 				return state_tuple<int, istack>(s);
 			};
 		};
-		std::cerr << "v : " << v << std::endl;
-		if (v > 3) {
-			state <int, istack> SP(push(v));		
-			return SP;
-		}
+
 		stack_comp pop = [] (istack s) {
 			auto val = s.front();
 			s.pop_front();
 			return state_tuple<int, istack>(val, s);
 		};
+
+		std::cerr << "v : " << v << std::endl;
+		if (v > 3) {
+			state <int, istack> SP(push(v));		
+			return SP;
+		}
+
 		state <int, istack> SP(pop);		
 		return SP;
 	};
@@ -215,6 +204,7 @@ int stm_4()
 	
 	state <int, istack> SM(pop);
 
+
 	auto R = monad<state>::bind<istack,int,int>(SM, f);
 	std::cerr << R << std::endl;
 
@@ -224,6 +214,63 @@ int stm_4()
 	auto r1 = runState(R, istack{1,4,5,3,1,8});
 	std::cerr << r1 << std::endl;
 
+	return 0;
+}
+
+int stm_5()
+{
+	istack L = {1,2,3,4};
+
+	std::function<stack_comp()> pop = []() {
+		return [] (istack s) {
+			auto val = s.front();
+			s.pop_front();
+			return state_tuple<int, istack>(val, s);
+		};
+	};
+
+	std::function<stack_comp(int)> push = [](int val) {
+		return [val] (istack s) {
+			s.push_front(val);
+			return state_tuple<int, istack>(s);
+		};
+	};
+
+	std::function< state<int, istack> (int)> f = [pop] (int v) {
+		state <int, istack> SP(pop());		
+		return SP;
+	};
+
+	std::function< state<int, istack> (int)> g = [push] (int v) {
+		state <int, istack> SP(push(498));		
+		return SP;
+	};
+
+	state <int, istack> SP(pop());
+	auto r1 = runState(SP,L);
+	std::cerr << r1 << std::endl;
+
+	state<int,istack> R = monad<state>::bind<istack,int,int>(SP, g);
+	auto res = runState(R,L);
+	std::cerr << res << std::endl;
+
+	state<int,istack> R2 = monad<state>::bind<istack,int,int>(R, g);
+	auto res2 = runState(R2,L);
+	std::cerr << res2 << std::endl;
+	auto res21 = runState(R2,L);
+	std::cerr << res21 << std::endl;
+
+	state<int,istack> R3 = monad<state>::bind<istack,int,int>(R2, g);
+	auto res3 = runState(R3,L);
+	std::cerr << "res3 " << res3 << std::endl;
+	auto res31 = runState(R3,L);
+	std::cerr << "res31 " << res3 << std::endl;
+	int n = 10;
+	while (n--) {
+		state<int,istack> R4 = monad<state>::bind<istack,int,int>(R3, g);
+		auto res4 = runState(R4,L);
+		std::cerr << "res4 :" << res4 << std::endl;
+	}
 	return 0;
 }
 
