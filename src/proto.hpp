@@ -21,6 +21,11 @@ extern int stm_2();
 extern int stm_3();
 extern int stm_4();
 extern int stm_5();
+extern int stm_6();
+extern int stm_7();
+extern int stm_8();
+extern int stm_9();
+extern int stm_10();
 
 
 extern int bracket_1();

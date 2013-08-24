@@ -38,7 +38,6 @@ applicative_functor<forward_zip_list> :public functor<forward_zip_list>{
 			auto it1 = F.begin();
 			auto it2 = L.begin();
 			while (it1 != F.end() && it2 != L.end()) {
-				std::cerr << "processing.." << std::endl;
 				auto func = *it1;
 				auto arg  = *it2;
 				acc.push_front(func(arg));

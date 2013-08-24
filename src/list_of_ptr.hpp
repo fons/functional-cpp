@@ -29,7 +29,7 @@ struct functor<forward_list_of_ptr> {
 };
 
 template<> struct 
-applicative_functor<forward_list_of_ptr> :public functor<forward_list_of_ptr>{
+applicative_functor<forward_list_of_ptr> :public functor<forward_list_of_ptr> {
 
     template<typename A>
     static forward_list_of_ptr<A> pure(A v) {
@@ -64,6 +64,7 @@ applicative_functor<forward_list_of_ptr> :public functor<forward_list_of_ptr>{
 			} 
 			acc.reverse();
 			return acc;
+			
 		};
 	};
 	

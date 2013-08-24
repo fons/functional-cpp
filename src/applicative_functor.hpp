@@ -22,6 +22,7 @@ struct applicative_functor <std::shared_ptr> : public functor<std::shared_ptr>
 	static std::shared_ptr<A> pure(A val) {
 		return std::make_shared<A>(val);
 	}
+
 	
 	template<typename A, typename B>
 	static std::function< std::shared_ptr<B> (std::shared_ptr<A> v)> apply(std::shared_ptr<std::function<B(A)>> f) {
@@ -53,9 +54,7 @@ applicative_functor<std::forward_list> :public functor<std::forward_list>{
 	
 	template<typename A>
 	static std::forward_list<A> pure(A v) {
-		std::forward_list<A> L;
-		L.push_front(v);
-		return L;
+		return std::forward_list<A>(1,v);
 	}
 	
 	template<typename A, typename B>

@@ -3,6 +3,7 @@
 
 template<typename A> using zip_list = std::list<A>;
 
+
 template <>
 struct functor<zip_list> {
 

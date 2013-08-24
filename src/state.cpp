@@ -49,8 +49,10 @@ int st_1()
 
 	state <int, std::uniform_int_distribution<int>> ST(getrand);
 	int n = 10;
+	auto S = runState(ST, di);
+	std::cerr << "iter : " << n << " " << S << std::endl;;
 	while ( n-- > 0) {
-		auto S = runState(ST, di);
+		S = runState(ST, S.state().first);
 		std::cerr << "iter : " << n << " " << S << std::endl;;
 	}
 	return 0;

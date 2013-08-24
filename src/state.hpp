@@ -31,37 +31,32 @@ private :
 	bool set;
 };
 
-
-
-
-
 template<typename A, typename S>
 using state_computation = std::function< state_tuple<A,S> (S)>;
 
 template <typename A, typename S>
 struct state 
 {
-	explicit state(state_computation<A,S> C) : C(C), valid(true){}
-	state(const state& o) : C(o.C), valid(true){}
+	explicit state(state_computation<A,S> C) : C(C){}
+	state(const state& o) : C(o.C){}
 	state& operator= (const state& o) {
 		if (&o == this) {
 			return *this;
 		}
-		C = o.C;
-		valid = o.valid;
+		C     = o.C;
 		return *this;
 	} 
 	std::ostream& pp(std::ostream& strm) const {
+		strm << "[state < " << typeid(A).name() << "," << typeid(S).name() << "]";
 		return strm;
 	}
-	
+
 	state_tuple<A,S> run_state(S state) {
 		return C(state);
 	}
 	
 private:
 	state_computation<A,S> C;
-	bool valid = false;
 };
 
 template<typename A, typename S>

@@ -76,7 +76,7 @@ template<> struct monad<std::shared_ptr> : public applicative_functor<std::share
 			if (M) {
 				return f(*M);
 			}
-			return  M;
+			return  std::shared_ptr<B>();
 		};
 	}
 

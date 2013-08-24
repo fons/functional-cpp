@@ -4,7 +4,7 @@ CC           = $(GCC)
 CFLAGS       = -c -Wall -std=c++11 -ggdb1
 LDFLAGS      =
 
-LATEX        = pdflatex
+LATEX        = /usr/texbin/pdflatex
 LATEXFLAGS   = -output-directory=$(DOCDIR)
 
 
@@ -46,6 +46,7 @@ $(OBJDIR)/%.o: %.cpp $(INCLUDES)
 docs 	: $(PDF)
 
 $(PDF) : $(DOCS)
+	$(foreach var, $(DOCS), $(LATEX) $(LATEXFLAGS) $(var);)
 	$(foreach var, $(DOCS), $(LATEX) $(LATEXFLAGS) $(var);)
 
 clean:

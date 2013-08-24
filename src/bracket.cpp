@@ -231,11 +231,10 @@ int bracket_8()
   typedef int         T1;
   typedef char        T2;
   typedef std::string T3;
-  //template<typename a> using m_t = std::forward_list<a>;
   typedef applicative_functor<std::forward_list> apf_t;
-  m_t<T1> L1 = apf_t::pure(1);
-  m_t<T2> L2 = apf_t::pure('a');
-  m_t<T3> L3 = apf_t::pure(std::string("hello"));
+  m_t<T1> L1 = {1,2,3};
+  m_t<T2> L2 = {'y', 'x'};
+  m_t<T3> L3 = {std::string("hello"), std::string("goodbye")};
 
   auto f1 = [] (T1 a) { return std::make_tuple(a);};
   auto f2 = [] (T1 a, T2 b) { return std::make_tuple(a,b);};
@@ -256,10 +255,17 @@ int bracket_8()
 int bracket_9()
 {
   typedef int         T1;
+  typedef char        T2;
   forward_list_of_ptr<T1> L1 = {std::make_shared<T1>(5),std::make_shared<T1>(15),std::make_shared<T1>(25),std::make_shared<T1>(35)};
+  forward_list_of_ptr<T2> L2 = {std::make_shared<T2>('a'),std::make_shared<T2>('b'),std::make_shared<T2>('c'),std::make_shared<T2>('z')};
   auto f1  = [] (T1 a) { return std::make_tuple(a);};
   auto R1 = bracket<forward_list_of_ptr>(f1, L1);
   std::cout << R1 << std::endl;
+
+  auto f2 = [] (T1 a, T2 b) { return std::make_tuple(a,b);};
+  auto R2 = bracket<forward_list_of_ptr>(f2, L1, L2);
+  std::cout << R2 << std::endl;
+
   return 0;
 }
 

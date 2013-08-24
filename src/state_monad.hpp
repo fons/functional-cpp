@@ -76,4 +76,23 @@ struct applicative_functor<state> : public functor <state>
 
 };
 
+template<> struct monad<state> : public applicative_functor<state> {
+
+	template<typename S, typename A, typename B>
+	static state<B,S> bind(state<A,S>& M, std::function< state<B,S> (A)>& f) {
+		state_computation<B,S> comp =[&f,&M](S s) {
+			auto res             = runState(M, s);
+			state<B,S> state_g   = f (res.value().first);
+			return runState(state_g, res.state().first);
+		};
+		return state<B,S> (comp);
+	};
+
+	template <typename S, typename A> static state<A,S> mreturn (A val) {
+		return applicative_functor<state>::pure<S,A>(val);
+	}
+
+};
+
+
 #endif

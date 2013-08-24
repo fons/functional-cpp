@@ -101,7 +101,6 @@ int apf_6()
 
   std::cout << "pl3 : " << pl3(90) << std::endl;
 
-
   auto r    = functor<unary_op>::fmap(plus,pl3);
   
   std::cout << " val : " << r(3)(3) << std::endl;
@@ -186,36 +185,56 @@ int apf_9()
 int apf_10()
 {
     forward_list_of_ptr<int> L = {std::make_shared<int>(5),std::make_shared<int>(15),std::make_shared<int>(25),std::make_shared<int>(35)};
-    auto f = [](const int& c) { std::cerr << c << std::endl; return c;};
+    auto f = [](const int& c) { std::cerr << c << ","; return c;};
     functor<forward_list_of_ptr>::fmap<int,int>(f)(L);
+	std::cerr << std::endl;
     auto y = applicative_functor<forward_list_of_ptr>::pure(45);
     auto lifted_lambda = applicative_functor<forward_list_of_ptr>::pure(f);
     applicative_functor<forward_list_of_ptr>::apply<int,int>(lifted_lambda)(L);
+	std::cerr << std::endl;
     applicative_functor<forward_list_of_ptr>::apply<int,int>(lifted_lambda)(y);
+	std::cerr << std::endl;
     return 0;
 }
+
 
 int apf_11()
 {
 	forward_zip_list<int> L = {2, 5, 10};
-	auto f = [](const int& c) { std::cerr << c << std::endl; return c;};
+	auto f = [](const int& c) { std::cerr << c << ","; return c;};
 	functor<forward_zip_list>::fmap<int,int>(f)(L);
+	std::cerr << std::endl;
+
 	auto y = applicative_functor<forward_zip_list>::pure(45);
 	auto lifted_lambda = applicative_functor<forward_zip_list>::pure(f);
+
 	applicative_functor<forward_zip_list>::apply<int,int>(lifted_lambda)(L);
+	std::cerr << std::endl;
 	applicative_functor<forward_zip_list>::apply<int,int>(lifted_lambda)(y);
+	std::cerr << std::endl;
     return 0;
 }
 
 int apf_12()
 {
-	zip_list<int> L = {2, 5, 10};
-	auto f = [](const int& c) { std::cerr << c << std::endl; return c;};
+
+	std::list<int> L = {2, 5, 10};
+	auto f = [](const int& c) { std::cerr << c << ","; return c;};
+	
 	functor<zip_list>::fmap<int,int>(f)(L);
-	auto y = applicative_functor<zip_list>::pure(45);
+	std::cerr << std::endl;
+
+	auto lifted_lambda_1 = applicative_functor<std::list>::pure(f);
+	applicative_functor<std::list>::apply<int,int>(lifted_lambda_1)(L);
+	std::cerr << std::endl;
+
 	auto lifted_lambda = applicative_functor<zip_list>::pure(f);
 	applicative_functor<zip_list>::apply<int,int>(lifted_lambda)(L);
+	std::cerr << std::endl;
+	auto y = applicative_functor<zip_list>::pure(45);
 	applicative_functor<zip_list>::apply<int,int>(lifted_lambda)(y);
+	std::cerr << std::endl;
+
     return 0;
 }
 
