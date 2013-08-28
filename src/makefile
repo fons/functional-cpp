@@ -1,8 +1,8 @@
 GCC          = g++ 
 CLANG        = clang++
 CC           = $(GCC)
-CFLAGS       = -c -Wall -std=c++11 -ggdb1
-LDFLAGS      =
+CFLAGS       = -c -Wall -std=c++11 -ggdb1 -lpthread
+LDFLAGS      = 
 
 LATEX        = /usr/texbin/pdflatex
 LATEXFLAGS   = -output-directory=$(DOCDIR)
@@ -36,7 +36,7 @@ all : $(SOURCES) $(EXECUTABLE) $(INCLUDES)
 
 $(EXECUTABLE): $(OBJECTS) $(INCLUDES) 
 		$(MKTARGETDIR)
-		$(CC) $(LDFLAGS) $(OBJECTS) -o $@
+		$(CC)  $(OBJECTS) -o $@ $(LDFLAGS)
 
 $(OBJDIR)/%.o: %.cpp $(INCLUDES) 
 		$(MKTARGETDIR)

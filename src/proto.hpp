@@ -12,6 +12,12 @@
 #include <memory>
 #include <random>
 
+extern int mb_0();
+extern int mb_1();
+extern int mb_2();
+
+extern int fv_0();
+
 extern int st_0();
 extern int st_1();
 
