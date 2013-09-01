@@ -15,6 +15,13 @@
 extern int mb_0();
 extern int mb_1();
 extern int mb_2();
+extern int mb_3();
+extern int mb_4();
+extern int mb_5();
+
+extern int mbm_0();
+extern int mbm_1();
+extern int mbm_2();
 
 extern int fv_0();
 

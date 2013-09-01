@@ -1,15 +1,15 @@
 #ifndef h__maybe__h
 #define h__maybe__h
 
+
+
 template <typename A>
 struct Maybe {
+	typedef A value_type;
+
 	Maybe(const Maybe& o) : val(o.val){}
 
-	const Maybe& operator=(const Maybe& o) {
-		if (o==&this) return *this;
-		val = o.val;
-		return *this;
-	}
+	void operator=(const Maybe& o) = delete;
 
  	std::ostream& pp(std::ostream& strm) const {
 		if (val.second) {
@@ -24,6 +24,7 @@ struct Maybe {
 	static Maybe Just(const A& a) {
 		return Maybe(a);
 	}
+
 	static Maybe None() {
 		return Maybe();
 	}
@@ -31,11 +32,17 @@ struct Maybe {
 	bool eq (const Maybe& m) const {
 		return (val.second == m.val.second) && (val.first == m.val.first);
 	}
+	
+	const A& operator*() {
+		return val.first;
+	}
 
 private: 
+
 	Maybe() : val(std::make_pair(A(), false)) {}
 	explicit Maybe(const A& a) : val(std::make_pair(a,true)){}
 	const std::pair<A, bool> val;
+
 };
 
 
@@ -71,6 +78,8 @@ template<typename A, typename B>
 bool operator!=(const Maybe<A>& l, const Maybe<B>& r) {
 	return !(l==r);
 }
+
+
 
 
 #endif

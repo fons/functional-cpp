@@ -99,3 +99,44 @@ int mb_2()
 
 	return 0;
 }
+
+int mb_3()
+{
+	auto v1 = just(34);
+	auto v2 = v1;
+	if (v1 == v2) {
+		std::cerr << "const copy worked : " << v1 << " == " << v2 << std::endl;
+	}
+	auto v3 = just(45);
+	std::cerr << "v 3 : " << v3 << std::endl;
+	//--> not allowed	v3 = v2;
+	//std::cerr << "v 3 : " << v3 << std::endl;
+
+	return 0;
+}
+
+int mb_4()
+{
+	auto v1 = just(34);
+	
+	std::cerr << "v1: " << v1 << std::endl;
+	std::cerr << "*v1: " << *v1 << std::endl;
+
+	auto v2 = none<std::string>();
+
+	std::cerr << "v2: " << v2 << std::endl;
+	std::cerr << "*v2: " << *v2 << std::endl;
+	if (v2 == v2.None()) {
+		std::cerr << "v2 is None !!" << std::endl;
+	}
+	
+	return 0;
+}
+
+int mb_5()
+{
+	std::list<int> L = {1,2,3,4,5};
+	auto l1 = just(L);
+	std::cerr << l1 << std::endl;
+	return 0;
+}
