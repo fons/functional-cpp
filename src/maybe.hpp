@@ -2,7 +2,6 @@
 #define h__maybe__h
 
 
-
 template <typename A>
 struct Maybe {
 	typedef A value_type;
@@ -12,11 +11,12 @@ struct Maybe {
 	void operator=(const Maybe& o) = delete;
 
  	std::ostream& pp(std::ostream& strm) const {
+		strm << "Maybe<" <<  typeid(A).name() << ">";
 		if (val.second) {
-			strm << "Just(" << val.first << ") [" <<  typeid(A).name() << "]";
+			strm << "[Just(" << val.first << ")]"; 
 		}
 		else {
-			strm << "None[" <<  typeid(A).name() << "]";
+			strm << "[None]";
 		}
 		return strm;
 	}
