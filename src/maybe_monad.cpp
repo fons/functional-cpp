@@ -31,9 +31,9 @@ int mbm_1()
 	auto get_string = [] (arg_t arg) {
 		return arg.second;
 	};
-
+	//cannot be instantiated
+	//auto pm = none<decltype(get_string)>();
 	auto lm = applicative_functor<Maybe>::pure(get_string);
-
 	auto v1 = applicative_functor<Maybe>::apply(lm, L);
 	std::cerr << v1 << std::endl;
 

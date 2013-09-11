@@ -2,68 +2,6 @@
 #include "show.hpp"
 #include "either_monad.hpp"
 
-template <>
-struct functor<Either> {
-
-	//curried version
-	template<typename T, typename A, typename lambda>
-	static auto fmap(lambda f) -> std::function < Either<T, decltype(f(A()))> (Either<T,A>)> {
-		return [&f](Either<T,A> e) {
-			return fmap(f, e);
-		};
-	}
-	
-	// uncurried, for functions..
-	
-	template<typename T, typename A, typename lambda>
-	static auto fmap(lambda f, Either<T,A> e) -> Either<T, decltype(f(A()))> {
-		if (e.Left()) {
-			return Either<T, decltype(f(A()))>::Left(e.left());
-		} 
-		return Either<T, decltype(f(A()))>::Right(f(e.right()));
-	};
-};
-
-template <> 
-struct applicative_functor<Either> : public functor <Either>
-{
-
-	template <typename T, typename A> 
-	static Either<T,A> pure(A val) {
-		return Either<T,A>::Right(val);
-	}
-
-	template<typename T, typename A, typename lambda>
-	static auto apply(Either<T, lambda> F , Either <T, A> m) {
-		return functor<Either>::fmap(F.right(), m);
-	};
-
-	template<typename T, typename A, typename lambda>
-	static auto apply(Either<T, lambda> F) {
-		return [F] (Either<T, A> m) {
-			return apply(F,m);
-		};
-	};
-
-};
-template <>
-struct monad<Either> : public applicative_functor <Either>
-{
-	template <typename T, typename A> 
-	static Either<T, A> mreturn (A val) {
-		return applicative_functor<Either>::pure<T,A>(val);
-	}
-	
-	//template<typename A, typename B>
-	//static std::function < F<B> (std::function< F<B> (A) > ) > bind(F<A> val);
-	template<typename T, typename A, typename lambda> 
-	static auto bind(Either<T,A> e, lambda F) {
-		if (e.Left()) {
-			return Either<T,typename decltype(F(A()))::right_value_type>::Left(e.left());
-		}
-		return F(e.right());
-	}
-};
 
 //////////////////////////////////////////////////////
 int eim_0()
@@ -98,7 +36,7 @@ int eim_2()
 {
 	std::function< Either<std::string, int> (int)> f = [](int x) {
 		if (x < 0) {
-			return Either<std::string, int>::Left("smaller than 0");
+			return Either<std::string, int>::Left(std::string("smaller than 0"));
 		}
 		return Either<std::string, int>::Right(1.15*x-10);;
 	};
@@ -115,6 +53,15 @@ int eim_2()
 
 int eim_3()
 {
+	std::function< Either<std::string, int> (int)> f = [](int x) {
+		if (x < 0) {
+			return Either<std::string, int>::Left(std::string("smaller than 0"));
+		}
+		return Either<std::string, int>::Right(1.15*x-10);;
+	};
+	auto e  = Either<std::string, int>::Right(-45);
+	auto r  = monad<Either>::bind<std::string, int, decltype(f)>(e)(f);
+	std::cerr << e << "  ->  " << r << std::endl;
 	return 0;
 }
 

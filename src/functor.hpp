@@ -1,19 +1,18 @@
 #ifndef H__FUNCTOR__H
 #define H__FUNCTOR__H
 
-
 template <template<typename T1, typename... D> class F>
 struct functor {
 
-  //curried version
+	//curried version
 	template<typename A, typename B>
-  static std::function < F<B> (F<A>)> fmap(std::function <B (A)> f);
+	static std::function < F<B> (F<A>)> fmap(std::function <B (A)> f);
 
-  // uncurried, for functions..
-  template<typename A, typename B>
-  static F<B> fmap(std::function <B (A)> f, F<A> L) {
-    return fmap(f)(L);
-  }
+	// uncurried, for functions..
+	template<typename A, typename B>
+	static F<B> fmap(std::function <B (A)> f, F<A> L) {
+		return fmap(f)(L);
+	}
 };
 
 //----------------------------- Implementation -----------------------
@@ -46,22 +45,22 @@ struct functor<std::shared_ptr> {
 
 template<> struct 
 functor<std::forward_list> {
-  template<typename A, typename B>
-  static std::function < std::forward_list<B> (std::forward_list<A>)> fmap(std::function <B (A)> f) {
-    return [f] (std::forward_list<A> L) {
-      return map<A,B>(f,L);
-    };
-  };
+	template<typename A, typename B>
+	static std::function < std::forward_list<B> (std::forward_list<A>)> fmap(std::function <B (A)> f) {
+		return [f] (std::forward_list<A> L) {
+			return map<A,B>(f,L);
+		};
+	};
 
-  template<typename A, typename B>
-  static std::forward_list<B> fmap(std::function <B (A)> f, std::forward_list<A> L) {
-    return fmap(f)(L);
-  };
+	template<typename A, typename B>
+	static std::forward_list<B> fmap(std::function <B (A)> f, std::forward_list<A> L) {
+		return fmap(f)(L);
+	};
 
-  template<typename A, typename B, typename F>
-  static std::forward_list<B> fmap(F f, std::forward_list<A> L) {
-    return map<A,F>(f, L);
-  };
+	template<typename A, typename B, typename F>
+	static std::forward_list<B> fmap(F f, std::forward_list<A> L) {
+		return map<A,F>(f, L);
+	};
 
 };
 

@@ -2,19 +2,22 @@
 \usepackage{comment}
 \usepackage{nth}
 \usepackage{setspace}
-\usepackage{color}
+\usepackage[usenames,dvipsnames]{color}
 \usepackage{listings}
 \usepackage{amssymb}
 \usepackage{stmaryrd}
 \usepackage{bbm}
+
+\definecolor{light-gray}{gray}{0.95}
+
 \lstset{ %
-language=C++,                % choose the language of the code
-basicstyle=\footnotesize,       % the size of the fonts that are used for the code \footnotesize
-numbers=left,                   % where to put the line-numbers
+language=C++,                   % choose the language of the code
+basicstyle=\tiny    ,       % the size of the fonts that are used for the code \footnotesize
+numbers=none,                   % where to put the line-numbers
 numberstyle=\footnotesize,      % the size of the fonts that are used for the line-numbers
 stepnumber=1,                   % the step between two line-numbers. If it is 1 each line will be numbered
 numbersep=5pt,                  % how far the line-numbers are from the code
-backgroundcolor=\color{white},  % choose the background color. You must add \usepackage{color}
+backgroundcolor=\color{light-gray},  % choose the background color. You must add \usepackage{color}
 showspaces=false,               % show spaces adding particular underscores
 showstringspaces=false,         % underline spaces within strings
 showtabs=false,                 % show tabs within strings adding particular underscores
@@ -36,7 +39,7 @@ escapeinside={\%*}{*)}          % if you want to add a comment within your code
          %Java
  }
 
-\doublespacing
+%%\doublespacing
  
 \renewcommand{\familydefault}{\sfdefault}
 
@@ -64,7 +67,7 @@ escapeinside={\%*}{*)}          % if you want to add a comment within your code
   \setlength{\parskip}{0pt}
   \setlength{\parsep}{0pt}
 }{\end{itemize}}
-
+%------------------------------------------------------------------------------------------------------------------------------------------------------
 \begin{document}
 
 \title{Functional Idioms in C++}
@@ -95,9 +98,10 @@ In this article I'll attempt to present an answer to that question.
 
 \subsection{Conventions and Notation}
 
-%%%___________________________________________________
+%%=======================================================================
 \section{Functional Idioms}
-%%%___________________________________________________
+\label{sec:funcidioms}
+%%=======================================================================
 %
 %
 \subsection{Introduction}
@@ -179,6 +183,7 @@ When this partially applied version of $plus$ is called with 6 an unsurprising 1
 
 Listing \ref{curry2} shows an implementation of curry2 in C++: 
 %--
+\begin{minipage}{\linewidth}
 \begin{lstlisting}[caption=curry for binary operators, label=curry2]
 template <typename R, typename T, typename U>
 std::function<std::function<R (U)> (T)> curry(std::function<R (T,U)> op)
@@ -188,6 +193,12 @@ std::function<std::function<R (U)> (T)> curry(std::function<R (T,U)> op)
   auto l = curry<int,int, int> ([](int x, int y) { return (5 + x) * y;});
   std::cout << l(1)(1) << std::endl; //prints 6
 \end{lstlisting}
+\end{minipage}
+%
+%
+%
+
+
 %---
 Currying plays an important role in functional programming \cite{field}. 
 It simplifies the design of higher order functions because we only have to consider unary functions.
@@ -203,6 +214,7 @@ However writing a curry operator or writing curried versions of a function has b
 %
 %%===================================
 \subsection{Functor}
+\label{subsec:functor}
 %%===================================
 %
 %
@@ -388,11 +400,22 @@ Monads need to satisfy certain laws, the justification of which can be found in 
 %
 
 \subsection{General Approach}
-------------------------------
+%%------------------------------
+
+I try to provide a sketch on how to implement the functional idioms discussed in section~\ref{sec:funcidioms}.
+The implemenations require that some of the C++11 standards are supported by the compiler, notably variadic templates and lambda's.
+The approach is to provide a definition in the form of a templated struct. 
+Typically this struct will have curried and n uncurried version.
+I use stl's $std::function$ template to highlight the interface and return type. 
+However, the speciliazation may in fact be written to support lambda's because lambda's are no automatically converted to
+$std::fucntion$. 
+In some cases the return type can be cumbersome to explicitly state and $auto$ is used instead.
+
 
 \subsection{Functor}
 %-------------------
 %
+\begin{minipage}{\linewidth}
 \begin{lstlisting}[caption=functor in C++, label=c++functor]
 template <template<typename T1, typename... D> class F>
 struct functor {
@@ -405,6 +428,10 @@ struct functor {
   }
 };
 \end{lstlisting}
+\end{minipage}
+%
+%
+%
 Listing \ref{c++functor} shows a template which defines the functor $fmap$ from type $A$ to type $B$ for a type class $F$. 
 The class F can have more than one template parameter, as indicated by the variadic template.
 This allows specialization for containers since they have more than one template parameter.
@@ -425,6 +452,11 @@ I'll call $(<\star>)$ $apply$ and use it in prefix mode.
 
 The $apply$ or $<\star>$ operation of the applicative functor looks similar to $fmap$, except that the function $a \rightarrow b$ is inside the 'container' f.
 
+
+%
+%
+%
+\begin{minipage}{\linewidth}
 \begin{lstlisting}[caption=applicative functor template in C++, label=apf_temp]
 template <template<typename T1, typename... D> class F> 
 struct applicative_functor : public functor <F>
@@ -437,6 +469,10 @@ struct applicative_functor : public functor <F>
   static std::function < F<B> (F<A>)> apply(F <std::function<B(A)>> f );
 };
 \end{lstlisting}
+\end{minipage}
+%
+%
+%
 
 \ref{apf_temp} shows the applicative functor as a template in C++. 
 Each individual container needs to provide its own implementation. 
@@ -449,6 +485,12 @@ Each individual container needs to provide its own implementation.
 %
 \subsubsection{Bracket}
 %_______________________
+%
+%
+
+A bracket is a convenience function which applies an $n-ary$ pure function to $n$ containers using applicative functors.
+
+%
 %
 %
 \begin {lstlisting} [caption=applicative brackets in c++, label=bracket]
@@ -479,9 +521,19 @@ struct bracket_helper<2, Cont, F, T1, T2> {
 };
 [...]
 \end{lstlisting}
-%%
-%%
-Brackets are implemented by currying the function and applying the partially applied function toe each subsequent container.
+%%\end{minipage}
+%
+%
+%
+%
+%
+
+Listing \ref{bracket} shows the function $bracket$ implemented using the $bracket_helper$ struct. 
+The template of $bracket$ has several classes.
+The first class is the type of the container. The second type is the type of the function or functor object.
+A variadic template is used to refer to the remaining types of the container instances. 
+The $sizeof...$ operator is used to determine the number of container instances passed in.
+
 
 First we convert n-ary the function $f$ by currying it : $f::(x,y,z) \rightarrow k \Rightarrow f_c::x \rightarrow y \rightarrow z \rightarrow k$. 
 $f_c$ is lifted into the container using pure $ \mbox{pure} \, f_c = L x \rightarrow y \rightarrow z \rightarrow k$. 
@@ -493,6 +545,9 @@ We keep doing this until a result is returned.
 The implementation below applies the curried function recursively to a the containers. 
 The bottom of the recursion is reached when the last container is processed.
 
+The value of the $sizeof...$ operator, i.e. the number of container instances passed in determines which specialization of  
+$bracket_helper$ to call.
+
 
 %
 %
@@ -501,8 +556,9 @@ The bottom of the recursion is reached when the last container is processed.
 %
 %
 %
-
+\begin{minipage}{\linewidth}
 \begin{lstlisting}[caption=monad defintion in C++, label=cppmonad]
+
 template <template<typename T1, typename... D> class F> 
 struct monad : public applicative_functor <F>
 {
@@ -514,7 +570,12 @@ struct monad : public applicative_functor <F>
 	static std::function < F<B> (std::function< F<B> (A) > ) > bind(F<A> val);
 	
 };
+
 \end{lstlisting}
+\end{minipage}
+%
+%
+%
 
 Monads extend applicative functors and that's reflected in the definition shown in listing \ref{cppmonad}.
 I've used $mreturn$ for $return$ and $bind$ for $>>=$.
@@ -526,17 +587,765 @@ This function takes an argument of type $A$ and returns a monad of type $B$, jus
 %
 %
 %%%==============================================================================----------------------------------------------
-\section{A simple example: Maybe and Option}
+\section{Maybe}
 %%%=============================================================================----------------------------------------------
 %
+
+%
+\subsection{Motivation}
+%--------------------------
 %
 %
-\subsection{Maybe}
+
+A simple way to capture failure without throwing an exception is to have the fucntion return a value and a boolean as part of a tuple.
+If the boolean is true, the computation succeeded and the vlaue is valid. Otherwise, an exception has occured.
+Function composition would also not be so obvious. The first function in the chain would have a simple type as an argument, bout it would return a tuple.
+The second function in the chain would now need to accept this tuple as an argument.
+
+Another drawback is that This is not a type safe approach.
+The type of this tuple would be a data type and a boolean. Nothing would indicate that this is a special tuple, signifying a failed computation.
+
+Haskell introduces the $Maybe$ type class to handle this.
+The Maybe type class ha two constructors or value :
+%
+\begin{eqnarray*}
+\mbox{Maybe}\, a &=& \mbox{None} | \mbox{Just} \, a
+\end{eqnarray*}
+%
+Here $a$ is the data type whose value we compute.
+A successful computation returns $Just \, a$ and a failed computation return $None$.
+Such computataions would have the following function signature : $ a \rightarrow \, \mbox{Maybe}\, b$.
+
+ 
+The functor would apply the fucntion to the value 'inside' $Just$, or return $None$ if the input was $None$.
+The Monad allows you to combine functions which return a $Maybe$ type.
+
+%
+\subsection{Maybe Type Class}
+%----------------------------
+%
+%
+The Maybe template class (or struct) in listing \ref{maybe} is an attempt to capture the spirit of Haskell's $Maybe$ type class
+The Maybe class is in fact a wrapper around a $std::pair<A,bool>$, where A is the template class.
+If the boolean member of this pair is false, the Maybe represent a failed computation.
+Otherwise it represents a successful one and the dereference operator $\star$ can be used to get the value.
+
+The Maybe class has two constructors. The default constructor creates a 'failed' state. 
+The other constructor takes a value of type A and instanciates a successful computation.
+
+The constuctors are private and the caller has to use the $Just$ or $None$ factory methods to instantiate the appropriate $Maybe$ instance.
+
+The Maybe structure returned by $None()$ as presented here is different from Haskell's $None$. 
+In C++ this failure still has a type associated with it. 
+It's type is $Maybe<A>$ and it's the internal state which indicates that the computation failed.
+
+This means that we need to instantiate a different  Maybe object in the Functor, 
+even if the input is a $amybe$ representing a failed computation.
+
+However the comparison of two failed computations should succees, regardless of the class type.
+This is done by overloading the comparison operator as shown in Listing \ref{maybeaux}.
+In contrast the comparison of two $Maybe$ instances should fail if they represent a successful computation but of different value types.
+The $eq$ method is used to determine equality if the type classes are the same.
+
+In addition to the comparison operator listing \ref{maybeaux} shows convenience function $just$ and $none$ to tersely instantiate $Maybe$'s.
+Use of these functions is shown in listing \ref{maybeexample}.
+%
+%
+%
+%
+\begin{minipage}{\linewidth}
+\begin{lstlisting}[caption=Implementation of the Maybe class, label=maybe]
+
+template <typename A>
+struct Maybe {
+	typedef A value_type;
+
+	Maybe(const Maybe& o) : val(o.val){}
+
+	void operator=(const Maybe& o) = delete;
+
+ 	std::ostream& pp(std::ostream& strm) const {
+		strm << "Maybe<" <<  typeid(A).name() << ">";
+		if (val.second) {
+			strm << "[Just(" << val.first << ")]"; 
+		}
+		else {
+			strm << "[None]";
+		}
+		return strm;
+	}
+
+	static Maybe Just(const A& a) {
+		return Maybe(a);
+	}
+
+	static Maybe None() {
+		return Maybe();
+	}
+
+	bool eq (const Maybe& m) const {
+		return (val.second == m.val.second) && (val.first == m.val.first);
+	}
+	
+	const A& operator*() {
+		return val.first;
+	}
+
+private: 
+
+	Maybe() : val(std::make_pair(A(), false)) {}
+	explicit Maybe(const A& a) : val(std::make_pair(a,true)){}
+	const std::pair<A, bool> val;
+
+};
+\end{lstlisting}
+\end{minipage}
+%
+%
+%
+
+%
+%
+\begin{minipage}{\linewidth}
+\begin{lstlisting}[caption=auxilliary function for the Maybe class, label=maybeaux]
+
+template<typename A>
+Maybe<A> just(A val) {
+	return Maybe<A>::Just(val);
+}
+
+template<typename A>
+Maybe<A> none() {
+	return Maybe<A>::None();
+}
+
+template<typename A>
+std::ostream& operator<<(std::ostream& strm, const Maybe<A>& M) 
+{
+	M.pp(strm);
+	return strm;
+}
+
+template<typename A, typename B>
+bool operator==(const Maybe<A>& l, const Maybe<B>& r) {
+	if (l.eq(l.None()) && r.eq(r.None())) return true;
+	return false;
+}
+
+template<typename A>
+bool operator==(const Maybe<A>& l, const Maybe<A>& r) {
+	return l.eq(r);
+}
+
+template<typename A, typename B>
+bool operator!=(const Maybe<A>& l, const Maybe<B>& r) {
+	return !(l==r);
+}
+
+\end{lstlisting}
+\end{minipage}
+%
+%
+%
+
+
+%
+%
+\begin{minipage}{\linewidth}
+\begin{lstlisting}[caption=Example of the use of Maybe, label=maybeexample]
+[...]
+	auto val = just("hello");
+	std::cerr << val << std::endl;
+
+	auto val2 = none<int>();
+	std::cerr << val2 << std::endl;
+	return 0;
+[...]
+\end{lstlisting}
+\end{minipage}
+%
+%
+%
+%
+%
+%
+%
+\subsection{Functor}
+%-----------------------
+%
+%
+
+The $Maybe$ structure can be thought of as a value container.
+The functor method $fmap$ can be used to apply a pure function to the value contained in the $Maybe$ 
+without explicitly pulling the value out of the conatiner.
+If the functor is applied to a failed computation a failed computation is returned.
+
+Listing \ref{maybefunctor} shows the specialization of the functor template introduced in section~\ref{subsec:functor}.
+The speciliazation shows both a curried and uncurried version of the $fmap$ method.
+
+The expression $decltype(f(A()))$ is used to determine the return type, where $f$ is the function or lambda passed in 
+and $A$ is the type of the input parameter.
+
+
+%
+%
+\begin{minipage}{\linewidth}
+\begin{lstlisting}[caption=Maybe Functor, label=maybefunctor]
+template<>
+struct functor<Maybe> {
+
+	template<typename A, typename lambda>
+	static auto fmap(lambda f) ->std::function<Maybe<decltype(f(A()))> (Maybe<A>) > {
+		return [f](Maybe<A> m) -> Maybe<decltype(f(A()))> {
+			if (m == m.None()) {
+				return Maybe<decltype(f(A()))>::None();
+			}
+			return just(f(*m));
+		};
+	}
+
+	template<typename A, typename lambda>
+
+	static auto retval(lambda f, Maybe<A> m) ->  Maybe<decltype(f(A()))>;
+
+	template<typename A, typename lambda>
+	static auto fmap(lambda f, Maybe<A> m) -> Maybe<decltype(f(A()))> {
+		return fmap<A,lambda>(f)(m);
+	}
+
+};
+\end{lstlisting}
+\end{minipage}
+%
+%
+%
+
+A si
+
+%
+%
+\begin{minipage}{\linewidth}
+\begin{lstlisting}[caption=example of the maybe functor, label=maybefunctorexample]
+[...]
+	auto f = [] (int x) {
+		return "xxxxxx";
+	};
+
+	auto v1 = just(10);
+	auto v2 = functor<Maybe>::fmap(f, v1);
+	auto v3 = functor<Maybe>::fmap<int>(f)(v1);
+	std::cerr << v1 << std::endl;
+	std::cerr << v2 << std::endl;
+	std::cerr << v3 << std::endl;
+	if (v2 == v3) {
+		std::cerr << v2 << " == " << v3 << std::endl;
+	}
+[...]
+\end{lstlisting}
+\end{minipage}
+%
+%
+%
+
+%
+\subsection{Applicative Functor}
+%-------------------------------
+%
+
+
+%
+%
+\begin{minipage}{\linewidth}
+\begin{lstlisting}[caption=AMaybe applicative functor, label=maybeapp ]
+template<>
+struct applicative_functor<Maybe> : public functor <Maybe>
+{
+	template <typename A> 
+	static Maybe<A> pure(A val) {
+		return just(val);
+	};
+	
+	template<typename A, typename lambda>
+	static auto apply(Maybe<lambda> F , Maybe<A> m) -> decltype(functor<Maybe>::retval(*F, m)) { 
+		// I can't call F.None() because lambda's don't have a default constructor..;
+		//std::function<typename decltype(functor<Maybe>::retval(*F, m))::value_type (A)> ff = *F;
+		return functor<Maybe>::fmap(*F, m);
+	};
+
+	template<typename A, typename lambda>
+	static auto apply(Maybe<lambda> F) -> std::function<decltype(functor<Maybe>::retval(*F, Maybe<A>::Just(A()))) (Maybe<A>)> {
+		return [F] (Maybe<A> m) {
+			return apply(F,m);
+		};
+	};
+};
+\end{lstlisting}
+\end{minipage}
+%
+%
+%
+
+
+%
+%
+\begin{minipage}{\linewidth}
+\begin{lstlisting}[caption=example of the maybe applicative, label=maybeappexample]
+[...]
+	typedef std::pair<int, std::string> arg_t;
+
+	Maybe<arg_t> L = just(std::make_pair(9,std::string("hello")));
+
+	auto get_string = [] (arg_t arg) {
+		return arg.second;
+	};
+
+	auto lm = applicative_functor<Maybe>::pure(get_string);
+
+	auto v1 = applicative_functor<Maybe>::apply(lm, L);
+	std::cerr << v1 << std::endl;
+
+	auto v2 = applicative_functor<Maybe>::apply<arg_t>(lm)(L);
+	std::cerr << v2 << std::endl;
+[...]
+\end{lstlisting}
+\end{minipage}
+%
+%
+%
+
+%
+\subsection{Monad}
+%-------------------
+%
+
+
+%
+%
+\begin{minipage}{\linewidth}
+\begin{lstlisting}[caption=Maybe monad, label=maybemonad]
+template <> 
+struct monad<Maybe> : public applicative_functor <Maybe>
+{
+	template <typename A> 
+	static Maybe<A> mreturn (A val) {
+		return applicative_functor<Maybe>::pure(val);
+	}
+
+
+	template<typename A, typename lambda>
+	static auto bind(Maybe<A> m) {
+		return [&m](lambda F) {
+			if (m == m.None()) {
+				//constructors are private so I do this in a bit of a rond-about way.
+				return Maybe<typename decltype(F(A()))::value_type>::None();
+			}
+			return F(*m);		
+		};
+	};
+
+	template<typename A, typename lambda>
+	static auto bind(Maybe<A> m, lambda F) ->  decltype(Maybe<typename decltype(F(A()))::value_type>::None()) {
+		return bind<A,lambda>(m)(F);
+	};
+};
+
+\end{lstlisting}
+\end{minipage}
+%
+%
+%
+
+
+%
+%
+\begin{minipage}{\linewidth}
+\begin{lstlisting}[caption=Maybe monad example, label=maybemonadexample]
+[...]
+	auto val1 = just(56);
+	auto lambda = [](int x) {
+		if ( x > 0) return just(std::string("good !"));
+		return none<std::string>();
+	};
+	auto val2 = monad<Maybe>::bind(val1, lambda);
+	std::cerr << val1 << std::endl;
+	std::cerr << val2 << std::endl;
+
+	std::cerr << monad<Maybe>::bind(just(-89), lambda) << std::endl;
+
+	std::cerr << monad<Maybe>::bind(monad<Maybe>::bind(just(-89), lambda),
+									[](const std::string& val) {
+										std::cerr<<"===> val" << std::endl;
+										return just(val);
+									});
+	std::cerr << std::endl;
+	std::cerr << monad<Maybe>::bind(monad<Maybe>::bind(just(89), lambda),
+									[](const std::string& val) {
+										std::cerr<<"===>  val " << val << std::endl;
+										return just(val);
+									});
+[...]
+\end{lstlisting}
+\end{minipage}
+%
+%
+%
+
+
+%===========================================================
+\section{Either}
+%=============================================================
+%
+
+\subsection{Motivation}
+%------------------------
+%
+
+\subsection{Either Type Class}
+%--------------------------------
+%
+
+%
+%
+\begin{minipage}{\linewidth}
+\begin{lstlisting}[caption=Either type class,label=either]
+template <typename L, typename R>
+struct Either {
+
+	typedef L left_value_type;
+	typedef R right_value_type;
+
+	Either(const Either& o) : value(o.value) {}
+
+	void operator=(const Either&) = delete;
+
+	static Either Left(const L& l) {
+		return Either(l, true);
+	}
+
+	static Either Right(const R& r) {
+		return Either(r);
+	}
+
+	bool Left() const {
+		return value.second;
+	}
+
+	bool Right()  const {
+		return (! Left());
+	}
+
+	const L& left() const {
+		return value.first.first;
+	}
+
+	const R& right() const {
+		return value.first.second;
+	}
+
+ 	std::ostream& pp(std::ostream& strm) const {
+		strm << "Either<" <<  typeid(L).name() << "," << typeid(R).name() << ">";;
+		if (value.second) {
+			strm << "[" << value.first.first << ", null]";
+		}
+		else {
+			strm << "[null," << value.first.second << "]"; 
+		}
+		return strm;
+	}
+
+	bool eq(const Either& o) const {
+		auto eqval = [this] (const value_t& l, const value_t& r) {
+			if (value.second) return l.first == r.first;
+			return l.second == r.second;
+		};
+		return ((value.second == o.value.second)
+				&& eqval(value.first, o.value.first));
+	}
+
+private :
+	Either (L val, bool left) : value(std::make_pair(std::make_pair(val,R()) , true)) {}
+	Either (R val) : value(std::make_pair(std::make_pair(L(),val) , false)) {}
+
+	//Either (L val, bool left) : value(std::make_pair(value_t(val) , true)) {}
+	//Either (R val) : value(std::make_pair(value_t(val) , false)) {}
+
+	/*
+	typedef struct {
+		L  first;
+		R  second;
+	} value_t;
+	*/
+	
+	typedef std::pair<L,R> value_t;
+	std::pair<value_t, bool> value;
+};
+
+\end{lstlisting}
+\end{minipage}
+%
+%
+%
+
+
+%
+%
+%
+\begin{minipage}{\linewidth}
+\begin{lstlisting}[caption=Auxilliary functions for the Either type class, label=eitheraux]
+template<typename A, typename B>
+std::ostream& operator<<(std::ostream& strm, const Either<A,B>& E) 
+{
+	E.pp(strm);
+	return strm;
+}
+
+
+template<typename A, typename B>
+Maybe<A> Left(const Either<A,B>& e)
+{
+	if (e.Left()) {
+		return just(e.left());
+	}
+	return none<A>();
+}
+
+template<typename A, typename B>
+Maybe<B> Right(const Either<A,B>& e)
+{
+	if (e.Right()) {
+		return just(e.right());
+	}
+	return none<B>();
+}
+
+template<typename A, typename B,typename C, typename D>
+bool operator==(const Either<A,B>& a, const Either<C,D>& b) {
+	return false;
+}
+
+template<typename A, typename B> 
+bool operator==(const Either<A,B>& a, const Either<A,B>& b) {
+	return a.eq(b);
+}
+
+template<typename A, typename B,typename C, typename D>
+bool operator!=(const Either<A,B>& a, const Either<C,D>& b) {
+	return !(a==b);
+}
+
+\end{lstlisting}
+\end{minipage}
+%
+%
+%
+%
+
+
+%
+%
+\begin{minipage}{\linewidth}
+\begin{lstlisting}[caption=Example of the use of Either,label=eitherexamp]
+[...]	
+	auto val = Either<std::string, std::string>::Left("hello");
+	std::cerr << val << std::endl;
+
+	auto v2 = Either<std::string, std::string>::Right("hello");
+	std::cerr << v2 << std::endl;
+
+	auto v3 = v2;
+	std::cerr << v3 << std::endl;
+[...]
+\end{lstlisting}
+\end{minipage}
+%
+%
+%
+
+
+\subsection{Functor}
+%----------------------
+%
+
+
+%
+%
+\begin{minipage}{\linewidth}
+\begin{lstlisting}[caption=Either Functor,label=eitherfunctor]
+template <>
+struct functor<Either> {
+
+	//curried version
+	template<typename T, typename A, typename lambda>
+	static auto fmap(lambda f) -> std::function < Either<T, decltype(f(A()))> (Either<T,A>)> {
+		return [&f](Either<T,A> e) {
+			return fmap(f, e);
+		};
+	}
+	
+	// uncurried, for functions..
+	
+	template<typename T, typename A, typename lambda>
+	static auto fmap(lambda f, Either<T,A> e) -> Either<T, decltype(f(A()))> {
+		if (e.Left()) {
+			return Either<T, decltype(f(A()))>::Left(e.left());
+		} 
+		return Either<T, decltype(f(A()))>::Right(f(e.right()));
+	};
+};
+\end{lstlisting}
+\end{minipage}
+%
+%
+%
+
+
+%
+%
+\begin{minipage}{\linewidth}
+\begin{lstlisting}[caption=Example of the Either functor,lbel=eitherfunctorexamp]
+[...]
+	auto v1 = Either<std::string, int>::Right(45);
+	auto v2 = Either<std::string, int>::Left("a value");
+	auto l = [](int x) {
+		return 2+x;
+	};
+	std::cerr << v1 << " --> " << functor<Either>::fmap(l, v1) << std::endl;
+	std::cerr << v2 << " --> " << functor<Either>::fmap(l, v2) << std::endl;
+[...]
+\end{lstlisting}
+\end{minipage}
+%
+%
+%
+
+
+\subsection{Applicative Functor}
+%-------------------------------
+%
+
+
+%
+%
+\begin{minipage}{\linewidth}
+\begin{lstlisting}[caption=Either applicative functor,label=eitherapp]
+template <> 
+struct applicative_functor<Either> : public functor <Either>
+{
+
+	template <typename T, typename A> 
+	static Either<T,A> pure(A val) {
+		return Either<T,A>::Right(val);
+	}
+
+	template<typename T, typename A, typename lambda>
+	static auto apply(Either<T, lambda> F , Either <T, A> m) {
+		return functor<Either>::fmap(F.right(), m);
+	};
+
+	template<typename T, typename A, typename lambda>
+	static auto apply(Either<T, lambda> F) {
+		return [F] (Either<T, A> m) {
+			return apply(F,m);
+		};
+	};
+
+};
+\end{lstlisting}
+\end{minipage}
+%
+%
+%
+
+
+%
+%
+\begin{minipage}{\linewidth}
+\begin{lstlisting}[caption=Either applicative, label=eitherapp]
+[...]
+	auto v1 = Either<std::string, int>::Right(45);
+	auto v2 = Either<std::string, int>::Left("a value");
+
+	auto l = [](int x) {
+		return 2+x*3;
+	};
+
+	auto ll = applicative_functor<Either>::pure<std::string>(l);
+	std::cerr << v1 << " --> " << applicative_functor<Either>::apply(ll, v1) << std::endl;
+	std::cerr << v2 << " --> " << functor<Either>::fmap(l, v2) << std::endl;
+[...]
+\end{lstlisting}
+\end{minipage}
+%
+%
+%
+
+
+\subsection{Monad}
+%------------------
+%
+
+%
+%
+%
+\begin{minipage}{\linewidth}
+\begin{lstlisting}[caption=Either monad,label=eithermonad]
+template <>
+struct monad<Either> : public applicative_functor <Either>
+{
+	template <typename T, typename A> 
+	static Either<T, A> mreturn (A val) {
+		return applicative_functor<Either>::pure<T,A>(val);
+	}
+	
+	template<typename T, typename A, typename lambda>
+	static auto bind(Either<T,A> e) {
+		return [e](lambda F) {
+			return bind(e, F);
+		};
+	}
+
+	template<typename T, typename A, typename lambda> 
+	static auto bind(Either<T,A> e, lambda F) {
+		if (e.Left()) {
+			return Either<T,typename decltype(F(A()))::right_value_type>::Left(e.left());
+		}
+		return F(e.right());
+	}
+};
+\end{lstlisting}
+\end{minipage}
+%
+%
+%
 
 
 
+%
+%
+\begin{minipage}{\linewidth}
+\begin{lstlisting}[caption=Example of the Either monad,label=eithermonadexamp]
+int eim_2()
+{
+	std::function< Either<std::string, int> (int)> f = [](int x) {
+		if (x < 0) {
+			return Either<std::string, int>::Left(std::string("smaller than 0"));
+		}
+		return Either<std::string, int>::Right(1.15*x-10);;
+	};
 
-\subsection{Option}
+	std::function< Either<std::string,int> (int, Either<std::string, int>)> repeat = [&](int n, Either<std::string, int> e) {
+		if ( n == 0) return e;
+		std::cerr << n << " : " << e << std:: endl << " -> ";
+		return repeat(n-1, monad<Either>::bind(e,f));
+	}; 
+	auto v  = repeat(12, Either<std::string, int>::Right(45));
+	std::cerr << v << std::endl;
+	return 0;
+\end{lstlisting}
+\end{minipage}
+%
+%
+%
 
 
 %%%==============================================================================----------------------------------------------
@@ -566,6 +1375,10 @@ only if we have a value in the corresponding position in the argument list.
 In the latter case we 'zip' the list of the functions and values.
 %% 
 %%
+
+%
+%
+\begin{minipage}{\linewidth}
 \begin{lstlisting}[caption=std::forward\_list is an applicative functor, label=fwd_list_functor]
 template<> struct 
 applicative_functor<std::forward_list> :public functor<std::forward_list>{
@@ -588,6 +1401,10 @@ applicative_functor<std::forward_list> :public functor<std::forward_list>{
     };
 };
 \end{lstlisting}
+\end{minipage}
+%
+%
+%
 %%
 %%
 The applicative functor for $std::forward\_list$ is shown in listing \ref{fwd_list_functor}.
@@ -596,6 +1413,11 @@ The body of apply consists of two nested loops traversing the input lists.
 \subsubsection{ZipList}
 %__________________________________________
 %   
+
+
+%
+%
+\begin{minipage}{\linewidth}
 \begin{lstlisting}[caption=ziplist is an applicative functor, label=zip_list_functor]
 template<typename A> using zip_list = std::list<A>;
 [...]
@@ -628,10 +1450,20 @@ struct applicative_functor<zip_list> :public functor<zip_list>{
 	
 };
 \end{lstlisting}
+\end{minipage}
+%
+%
+%
 
 In listing \ref{zip_list_functor} I show the implementation of the applicative functor for the zip list based on $std::list$. 
 The implementation of the $functor$ is  a straight forward map and is not shown. 
 In the body of the $apply$ method, the two lists are traversed in parallel. The traversal stops when either one of the lists has run out of elements.
+
+
+%
+%
+%
+\begin{minipage}{\linewidth}
 \begin{lstlisting}[caption=the applicative functor for list and ziplist, label=exampl_list]
 
 	forward_zip_list<int> L = {2, 5, 10};
@@ -645,6 +1477,10 @@ In the body of the $apply$ method, the two lists are traversed in parallel. The 
 	applicative_functor<zip_list>::apply<int,int>(lifted_lambda)(L);
     //prints 2,
 \end{lstlisting}
+\end{minipage}
+%
+%
+%
 
 Listing \ref{exampl_list} shows a simple example of how the applicative functors for list and zip list differ. 
 A simple lambda function is lifted into a list and applied to a list of integers. 
@@ -657,6 +1493,10 @@ For the list case all the elements are printed. For the zip list only one elemen
 %------------------
 %
 %%[caption=applicative functor for the forward_list using brackets, label=br_fwd]
+%
+%
+%
+\begin{minipage}{\linewidth}
 \begin{lstlisting}[caption=applicative functor for the std::forward\_list using brackets, label=br_fwd]
 [...]
   typedef int         T1;
@@ -670,9 +1510,17 @@ For the list case all the elements are printed. For the zip list only one elemen
   [...]
   [(1,y,hello),(1,y,goodbye),(1,x,hello),(1,x,goodbye),(2,y,hello),(2,y,goodbye),(2,x,hello),(2,x,goodbye),(3,y,hello),(3,y,goodbye),(3,x,hello),(3,x,goodbye),]
 \end{lstlisting}
+\end{minipage}
+%
+%
+%
 
 Listing \ref{br_fwd} I show how brackets cane be used to apply a function to multiple lists.
 
+%
+%
+%
+\begin{minipage}{\linewidth}
 \begin{lstlisting}[caption=applicative functor for shared pointers applied using bracket notation, label=br_ptr]
   template<typename a> using s_t = std::shared_ptr<a>;
   typedef applicative_functor<std::shared_ptr> apf_t;
@@ -683,6 +1531,10 @@ Listing \ref{br_fwd} I show how brackets cane be used to apply a function to mul
   auto R3 = bracket(f3, L1, L2,L3);
   std::cout << R3 << std::endl; //std::shared_ptr<St5tupleIIicSsEE>((1,a,hello))
 \end{lstlisting}
+\end{minipage}
+%
+%
+%
 
 In listing \ref{br_ptr} the data in three separate pointers is combined to create a pointer to a tuple.
 Again notice that the function is pure in that it does not reference the container the data was in.
@@ -694,7 +1546,10 @@ Again notice that the function is pure in that it does not reference the contain
 %
   
   
-
+%
+%
+%
+\begin{minipage}{\linewidth}
 \begin{lstlisting}[caption=monad for std::list, label=listmonad]
 template<> struct monad<std::list> : public applicative_functor<std::list> {
 
@@ -712,6 +1567,10 @@ template<> struct monad<std::list> : public applicative_functor<std::list> {
     [...]
 };
 \end{lstlisting}
+\end{minipage}
+%
+%
+%
 %%
 %%
 The implementation for the stl $std::list$ container is showm in listing \ref{listmonad}.
@@ -738,6 +1597,11 @@ We need to return a new shared pointer because the input and return types of $f$
 Also note that if the derefrence fails, an empty shared pointer is returned, rather than an exception thrown.
 %%
 %%
+
+%
+%
+%
+\begin{minipage}{\linewidth}
 \begin{lstlisting}[caption=shared pointer as container, label=shpfunctor]
 template <>
 struct functor<std::shared\_ptr> {
@@ -762,6 +1626,10 @@ struct functor<std::shared\_ptr> {
   }
 };
 \end{lstlisting}
+\end{minipage}
+%
+%
+%
 
    
 %
@@ -776,6 +1644,11 @@ struct functor<std::shared\_ptr> {
 %
 \subsection{Monad}
 %-----------------
+
+%
+%
+%
+\begin{minipage}{\linewidth}
 \begin{lstlisting}[caption=monad implemention for std::shared\_ptr, label=ptrmonad]
 template<> struct monad<std::shared_ptr> : public applicative_functor<std::shared_ptr> {
 
@@ -791,6 +1664,10 @@ template<> struct monad<std::shared_ptr> : public applicative_functor<std::share
 [..]
 };
 \end{lstlisting}
+\end{minipage}
+%
+%
+%
 
 In \ref{ptrmonad} I show the monad implementation for $std::shared_ptr$. 
 The validity of the shared pointer is checked before it is dereferenced and its value passed on to the function $f$.
@@ -799,7 +1676,7 @@ This implies that a chain of monadic computations can return null if any one of 
 
 %
 %%=============================================================================================
-\section{list of shared pointers}
+\section{List of Shared Pointers}
 %%=============================================================================================
 %
 %
@@ -810,6 +1687,10 @@ This implies that a chain of monadic computations can return null if any one of 
 %
 %
 
+
+%
+%
+\begin{minipage}{\linewidth}
 \begin{lstlisting}[caption=mapping over a list of shared pointers, label=ptrmap]
   typedef std::tuple<int,std::string> C;
   std::list<std::shared\_ptr<C>> L = {std::shared\_ptr<C>{new C(10, "a")}, std::shared\_ptr<C>{new C(20, "b")}, std::shared\_ptr<C>{new C(3467, "mnhjk")}};
@@ -817,6 +1698,10 @@ This implies that a chain of monadic computations can return null if any one of 
   functor<std::list>::fmap(F, L);
   return 0;
 \end{lstlisting}
+\end{minipage}
+%
+%
+%
 
 A functor gives the ability to apply a pure function to a value in a container.
 This decouples the values and the functions that operate on them from the containers these values may be in.
@@ -843,6 +1728,11 @@ In this case we can't write the applicative as a combination of two applicative 
 The fcuntion in the definition for the applicative functor for lists is not a reference.
 $apply$ encapsulates the access to the data stored in the shared pointer elements of the list.
 
+
+%
+%
+%
+\begin{minipage}{\linewidth}
 \begin{lstlisting}[caption=fmap implementation for a list of shared pointers, label=fmap_ptr_lst]
 struct functor<forward_list_of_ptr> {
 [...]
@@ -855,6 +1745,16 @@ struct functor<forward_list_of_ptr> {
   }
 };
 \end{lstlisting}
+\end{minipage}
+%
+%
+%
+
+
+%
+%
+%
+\begin{minipage}{\linewidth}
 \begin{lstlisting}[caption=applicative functor for a list of shared pointers, label=apf_ptr_list]
 template<typename A> using forward_list_of_ptr = std::forward_list<std::shared_ptr<A>>;
 [...]
@@ -878,7 +1778,16 @@ applicative_functor<forward_list_of_ptr> :public functor<forward_list_of_ptr> {
 	};
 }	
 \end{lstlisting}
+\end{minipage}
+%
+%
+%
 
+
+%
+%
+%
+\begin{minipage}{\linewidth}
 \begin{lstlisting}[caption=example for list of pointers, label=examp_list_ptr]
     forward_list_of_ptr<int> L = {std::make_shared<int>(5),std::make_shared<int>(15),std::make_shared<int>(25),std::make_shared<int>(35)};
     auto f = [](const int& c) { std::cerr << c << ","; return c;};
@@ -889,6 +1798,10 @@ applicative_functor<forward_list_of_ptr> :public functor<forward_list_of_ptr> {
     applicative_functor<forward_list_of_ptr>::apply<int,int>(lifted_lambda)(L);
 	std::cerr << std::endl;
 \end{lstlisting}
+\end{minipage}
+%
+%
+%
 
 In listing \ref{examp_list_ptr} I show how a function can be mapped over a list of pointers, using its functor and appplicative.
 The results are not too surprising.
@@ -912,16 +1825,28 @@ The results are not too surprising.
 
 \subsection{Functor}
 
+%
+%
+%
+\begin{minipage}{\linewidth}
 \begin{lstlisting}[caption=unary operator, label=unop]
 template <typename A, typename B> struct unary_op {
   
 };
 \end{lstlisting}
+\end{minipage}
+%
+%
+%
 
 First I define the unary operator type in \ref{unop}.
 A unary operator $\rightarrow$ constructs a unary function :$(\rightarrow) r\;a => (r \rightarrow a)$.
 Next I'll provide an implementation for unary operators in \ref{funop}
 
+%
+%
+%
+\begin{minipage}{\linewidth}
 \begin{lstlisting}[caption=functor for unary operators, label=funop]
 template<>
 struct functor<unary_op>
@@ -944,6 +1869,10 @@ struct functor<unary_op>
 
 };
 \end{lstlisting}
+\end{minipage}
+%
+%
+%
 
 For a unary operator $f$ in $fmap$  would be $(\rightarrow) r$ and fmap :
 \begin{eqnarray*}
@@ -974,6 +1903,10 @@ A change in state $s$ is represented by a function $s \rightarrow (a,s)$.
 $a$ is the value associated with the state change.
 The state $s$ is mutable.
 
+%
+%
+%
+\begin{minipage}{\linewidth}
 \begin{lstlisting}[caption=state tuple, label=state_tuple]
 template<typename A, typename S>
 struct state_tuple {
@@ -1003,16 +1936,34 @@ private :
 	bool set;
 };
 \end{lstlisting}
+\end{minipage}
+%
+%
+%
 
 The state tuple in listing \ref{state_tuple} is a thin wrapper around $std::pair$ which adds a few convenience methods.
 A state computation takes a state of type S and returns a state tuple of types A and S.
+
+%
+%
+%
+\begin{minipage}{\linewidth}
 \begin{lstlisting}[caption=state computation albel=state_comp]
 template<typename A, typename S>
 using state_computation = std::function< state_tuple<A,S> (S)>;
 \end{lstlisting}
+\end{minipage}
+%
+%
+%
 %%
 The state class shown in \ref{state} encapsulates the state computation and adds a few convenience methods.
 %%
+
+%
+%
+%
+\begin{minipage}{\linewidth}
 \begin{lstlisting}[caption=state, label=state]
 template <typename A, typename S>
 struct state 
@@ -1039,6 +1990,16 @@ private:
 	state_computation<A,S> C;
 };
 \end{lstlisting}
+\end{minipage}
+%
+%
+%
+
+
+%
+%
+%
+\begin{minipage}{\linewidth}
 \begin{lstlisting}[caption=runState, label=runstate]
 template<typename A, typename S>
 state_tuple<A,S> runState(state<A,S> M, S state)
@@ -1046,9 +2007,21 @@ state_tuple<A,S> runState(state<A,S> M, S state)
 	return M.run_state(state);
 }
 \end{lstlisting}
+\end{minipage}
+%
+%
+%
+
+%
+%
 %%
 The $run_state$ method is key to the use of the state class and the function $runState$ executes this method by passing a state to it.
 %%
+
+%
+%
+%
+\begin{minipage}{\linewidth}
 \begin{lstlisting}[caption=example of the use of the state class, label=stateexample]
 [...]
 	std::default_random_engine de;
@@ -1068,6 +2041,11 @@ The $run_state$ method is key to the use of the state class and the function $ru
 	}
 [..]
 \end{lstlisting}
+\end{minipage}
+%
+%
+%
+
 The use of the state class is illustrated in listing \ref{stateexample} using a random number generator.
 A number is drawn from a uniform distribution of integers.
 $getrand$ is the state computation: It takes the current state of the uniform distribution and returns a state tuple containing a 
@@ -1090,9 +2068,185 @@ We are less likely to want to combine results by different random number generat
 
 %
 %
+%
+\begin{minipage}{\linewidth}
+\begin{lstlisting}[caption=State functor,label=statefunctor]
+template <>
+struct functor<state> {
+
+	template<typename S, typename A, typename B>
+	static state<B,S>  fmap (std::function<B(A)> f, state<A,S> M) {
+		state_computation<B,S> comp =[f,&M](S s) {
+			auto next       = runState(M, s);
+			auto value      = next.value();
+			auto new_state  = next.state().first;
+			if (value.second) {
+				return state_tuple<B, S>(f(value.first), new_state);
+			}
+			return state_tuple<B, S>(new_state);
+		};
+		state <B, S> ST(comp);
+		return ST;	
+	}
+	// this doesn't work (yet)
+	template<typename S, typename A, typename B>
+	static std::function<state<B,S>(state<A,S>)>  fmap (std::function<B(A)> f) {
+		return [f] (state<A,S> M) {
+			state_computation<B,S> comp =[f,&M](S s) {
+				auto next       = runState(M, s);
+				auto value      = next.value();
+				auto new_state  = next.state().first;
+				if (value.second) {
+					return state_tuple<B, S>(f(value.first), new_state);
+				}
+				return state_tuple<B, S>(new_state);
+			};
+			state <B, S> ST(comp);
+			return ST;	
+		};
+	}
+
+};
+\end{lstlisting}
+\end{minipage}
+%
+%
+%
+
+
+%
+%
+%
+\begin{minipage}{\linewidth}
+\begin{lstlisting}[caption=Example of the state functor,label=statefuncexamp]
+[...]
+	std::default_random_engine de;
+	std::uniform_int_distribution<int> di(10, 20);
+	state_computation<int,std::uniform_int_distribution<int>>  getrand = [&de] (std::uniform_int_distribution<int> s) {
+		auto val = s(de);
+		return state_tuple<int, std::uniform_int_distribution<int> >(val, s);
+	}; 
+
+	state <int, std::uniform_int_distribution<int>> ST(getrand);
+
+	std::function<char(int)> f = [] (int i) {
+		if (i < 15) {
+			return 'A';
+		}
+		return 'Z';
+	};
+
+
+	int n = 10;
+	while (n-- > 0) { 
+		auto SRT = functor<state>::fmap(f, ST);
+		auto S = runState(SRT, di);
+		std::cerr << S << std::endl;;
+	}
+
+	auto SRT = functor<state>::fmap<std::uniform_int_distribution<int>>(f, ST);
+	auto S = runState(SRT, di);
+	std::cerr << S << std::endl;;
+[...]
+\end{lstlisting}
+\end{minipage}
+%
+%
+%
+
+%
+%
 \subsection{Applicative Functor}
 %-------------------------------
 %
+
+%
+%
+%
+\begin{minipage}{\linewidth}
+\begin{lstlisting}
+template <>
+struct applicative_functor<state> : public functor <state>
+{
+
+	template <typename S, typename A> static  state<A,S> pure(A val) {
+		state_computation<A,S> comp =[val](S s) {
+			return state_tuple<A, S>(val, s);
+		};
+		state <A, S> ST(comp);
+		return ST;	
+	}
+	
+	template<typename S, typename A, typename B>
+	static state<B,S> apply ( state<std::function<B(A)>, S> F, state<A,S> M) {
+		
+		state_computation<B,S> comp =[F,&M](S s) {
+			auto rs1  = runState(F, s);
+			auto resv = rs1.value();
+			if (resv.second) {
+				std::function<B(A)> f = resv.first;
+				auto MT         = functor<state>::fmap<S,A,B>(f, M);
+				auto rs2        = runState(MT, s);
+				auto value      = rs2.value();
+				auto new_state  = rs2.state().first;
+				if (value.second) {
+					return state_tuple<B, S>(value.first, new_state);
+				}
+				return state_tuple<B, S>(new_state);
+			}
+			return state_tuple<B, S>(s); 
+		};
+		state <B, S> ST(comp);
+		return ST;	
+	}
+
+};
+\end{lstlisting}
+\end{minipage}
+%
+%
+%
+
+
+%
+%
+%
+\begin{minipage}{\linewidth}
+\begin{lstlisting}[caption=Example of the state applicative functor,label=stateappexample]
+[...]
+	istack L = {1,2,3,4};
+	
+	std::function<char(int)> f = [] (int i) {
+		if (i < 3) {
+			return 'A';
+		}
+		return 'Z';
+	};
+
+	stack_comp pop = [] (istack s) {
+		auto val = s.front();
+		s.pop_front();
+		return state_tuple<int, istack>(val, s);
+	};
+	
+	state <int, istack> SM(pop);
+
+	auto F = applicative_functor<state>::pure<istack>(f);
+	std::cerr << F << std::endl;
+
+	auto r1 = runState(SM, L);
+	std::cerr << r1 << std::endl;;
+	auto SC = applicative_functor<state>::apply<istack, int, char>(F, SM);
+	auto r2 = runState(SC, L);
+	std::cerr << r2 << std::endl;;
+
+\end{lstlisting}
+\end{minipage}
+%
+%
+%
+
+
 
 
 %
@@ -1101,7 +2255,10 @@ We are less likely to want to combine results by different random number generat
 %-------------------------------
 %
 
-
+%
+%
+%
+\begin{minipage}{\linewidth}
 \begin{lstlisting}[caption=state monad, label=statemonad]
 template<> struct monad<state> : public applicative_functor<state> {
 
@@ -1121,6 +2278,11 @@ template<> struct monad<state> : public applicative_functor<state> {
 
 };
 \end{lstlisting}
+\end{minipage}
+%
+%
+%
+
 
 The state monad in listing \ref{statemonad} takes a function with an argument of type $A$ and a state with a value of type $A$ and state of type $S$ and 
 returns a state of the same type but with a value of type $B$.
@@ -1130,6 +2292,11 @@ The function $f$ is then called on the value generated by the state computation.
 The result is a new state which is run with the new value.
 $comp$ is returned as the new state in the $state$ constructor.
 
+
+%
+%
+%
+\begin{minipage}{\linewidth}
 \begin{lstlisting}[caption=example of the state monad, label=examplestatemonad]
 [...]
 	typedef std::uniform_int_distribution<int> idist;
@@ -1162,7 +2329,12 @@ $comp$ is returned as the new state in the $state$ constructor.
 	S = runState(Sf, idist (100, 200));
 	std::cerr << S << std::endl;;
 
-\end{lstlisting}  
+\end{lstlisting}
+\end{minipage}
+%
+%
+%
+  
 
 The state monad is used to string various stateful computations together. 
 In listing \ref{examplestatemonad} I revisit the random number generator example discussed earlier.
@@ -1176,6 +2348,10 @@ First The resulting computation is called with a distribution engine with a rang
 The results of the random number generation in listing \ref{examplestatemonad} are not available for further processing.
 To collect the results we need to extend the state to include a list and update the list with the result of the number generator.
 
+%
+%
+%
+\begin{minipage}{\linewidth}
 \begin{lstlisting}[caption=extended state monad example, label=ext-statemonad-examp]
 [...]
 	typedef std::list<int>                     icont_t;
@@ -1219,6 +2395,11 @@ To collect the results we need to extend the state to include a list and update 
 	std::cerr << S << std::endl;;
 [...]
 \end{lstlisting}
+\end{minipage}
+%
+%
+%
+
 
 The valure in the state monad is not being used. 
 In listing \ref{ext-statemonad-examp} the state is extended to include a list of value.
@@ -1245,7 +2426,85 @@ The monadic function $f$ noew returns a different state, depending on whether th
 
 \subsection{Capturing Future Values}
 
+%
+%
+%
+\begin{minipage}{\linewidth}
+\begin{lstlisting}[caption=Future value type class, label=fv]
+template <typename A, typename B>
+struct future_value {
+	explicit future_value(std::function<B(A)> f) : F(f){}
+	future_value(const future_value<A,B>& o) : F(o.F) {}
+	const future_value<A,B> operator=(const future_value<A,B>& o) {
+		if (o == &this) return *this;
+		F = o.F;
+		return *this;
+	}
 
+	std::ostream& pp(std::ostream& strm) const {
+		strm << "future_value <" << typeid(A).name() 
+			 << "," << typeid(B).name() << ">";
+		return strm;
+	}
+
+	Maybe<B> operator()(A a) {
+		try {
+			auto f = std::async([=]{return F(a);});
+			return just(f.get());
+		} catch (const std::exception& e) {
+			std::cerr << "exception : " << e.what() << std::endl;
+		}
+		return none<B>();
+	}
+private :
+	std::function<B(A)> F;
+};
+
+template<typename A, typename B>
+std::ostream& operator<<(std::ostream& strm, const future_value<A,B>& fv) 
+{
+	return fv.pp(strm);;
+}
+
+template<typename A, typename B>
+Maybe<B> runFutureValue(future_value<A,B> fv, A arg)
+{
+	return fv(arg);
+}
+
+\end{lstlisting}
+\end{minipage}
+%
+%
+%
+
+
+%
+%
+\begin{minipage}{\linewidth}
+\begin{lstlisting}[caption=Example of the use of the future value type class,label=fvexamp]
+[...]
+	std::function<int(int)> f = [](int x) { 
+		std::cerr << "start..." << std::endl;
+		int n = 5;
+		while (n--) {
+			std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+			std::cerr << ".";
+		}
+		std::cerr << std::endl;
+		return x+45;
+	};
+	future_value<int,int> fv(f);
+	std::cerr << fv << std::endl;
+	auto res = runFutureValue(fv, 45);
+	std::cerr << res << std::endl;
+	return 0;
+[...]
+\end{lstlisting}
+\end{minipage}
+%
+%
+%
 
 \subsection{Functor}
 
