@@ -7,12 +7,13 @@
 \usepackage{amssymb}
 \usepackage{stmaryrd}
 \usepackage{bbm}
+\usepackage[cm]{fullpage}
 
-\definecolor{light-gray}{gray}{0.95}
+\definecolor{light-gray}{gray}{0.75}
 
 \lstset{ %
 language=C++,                   % choose the language of the code
-basicstyle=\tiny    ,       % the size of the fonts that are used for the code \footnotesize
+basicstyle=\scriptsize  ,           % the size of the fonts that are used for the code \footnotesize
 numbers=none,                   % where to put the line-numbers
 numberstyle=\footnotesize,      % the size of the fonts that are used for the line-numbers
 stepnumber=1,                   % the step between two line-numbers. If it is 1 each line will be numbered
@@ -1400,16 +1401,24 @@ The second application of bind returns an $Either$ instance with $68$ in its rig
 %
 %
 
-
 \subsection{Monad}
 %------------------
 %
-%
-%
+
+In the previous sections we saw two different ways to apply a pure function to a value in the right slot of an $Either$ instance.
+The functor and applicative functor encapsulate the plumbing of checking to see if the right slot is active and if so, to retrieve
+the value from it and pass it on to the function.
+Because the functins are pure they can only return other values and the structure of the computations won't change.
+
+Lat's say that we change the function so that it returns an $Either$ instance with the value stored in the right slot.
+If an exception occurs, a message to that effect is stored in the left slot.
+To combine two functions the caller would need to check to see which slot of the $Either$ instance is active, extract the value and passed it on to the next function.
+If the left slot is active, it signals that an excaption has occurred, and the next stage of the computation is skipped.
+The monad template class specialization in listing \ref{eithermonad} encapsulates this set of operations.
+The signature of the functions passed on to the monad is $ a \rightarrow M \; b$. That is they take a value and return a value in a 'context'.
+Doing so allows these fucntions to affect the next stage of the computation, e.g. by skipping those of an exception has occurred.
 
 
-
-%
 %
 %
 \begin{minipage}{\linewidth}
@@ -1443,7 +1452,14 @@ struct monad<Either> : public applicative_functor <Either>
 %
 %
 
+Listing~\ref{eithermonadexamp} shows a simple exampl of the use of the $Either$ monad.
+The core of the example is the $repeat$ lambda. 
+It repeatedly calls bind with result value as the new argument.
+The lambda $f$ is the other argument for the bind function.
+If the input value is negative it returns an $Either$ instance with a message in its left slot.
+The value in its right slot is the result of $1.15 \; x - 10$.
 
+In the example $repeat$ is called $12$ times.
 
 %
 %
