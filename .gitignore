@@ -13,3 +13,11 @@ bin/
 *.log
 *.gz
 *dvi
+*idv
+*4ct
+*aux
+*log
+*tc
+*xref
+*lg
+*tmp

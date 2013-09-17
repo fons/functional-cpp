@@ -1,7 +1,8 @@
 #include "proto.hpp"
 #include "show.hpp"
 #include "either_monad.hpp"
-
+#include "curry.hpp"
+#include "bracket.hpp"
 
 //////////////////////////////////////////////////////
 int eim_0()
@@ -66,4 +67,21 @@ int eim_3()
 }
 
 
+int eim_4()
+{
+	auto f = std::plus<int>();
 
+	std::function<std::function<int(int)> (int)> cf = 	curry<decltype(f),int,int>(f);
+	std::cerr << " 23 + 45 = " << f(23,45) << std::endl;
+	std::cerr << " 23 + 45 = " << cf(23)(45) << std::endl;
+
+	auto F   = applicative_functor<Either>::pure<std::string>(cf);
+	auto V1  = applicative_functor<Either>::pure<std::string>(23);
+	auto V2  =  applicative_functor<Either>::pure<std::string>(45);
+	std::cerr << V1 << " " << V2 << std::endl;  
+	
+	auto A1  = applicative_functor<Either>::apply(F,  V1);
+	auto A2  = applicative_functor<Either>::apply(A1, V2);
+	std::cerr << A2 << std::endl;  
+	return 0;
+}

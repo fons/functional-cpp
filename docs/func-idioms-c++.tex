@@ -80,9 +80,13 @@ In this paper I review the implementation of functors, applicative functors and 
 
 \tableofcontents
 
+%===========================================================
 \section{Introduction}
+%===========================================================
 
 \subsection{Functional Programming}
+%%------------------------------
+
 Functional programming emphasizes the use of immutable data structures and pure functions.
 A pure function's output is determined solely by its input.
 However, this does not capture all the complexity of realistic programs, like state, IO and exceptions. 
@@ -95,8 +99,10 @@ In this article I'll attempt to present an answer to that question.
 
 
 \subsection{Support in C++}
+%%------------------------------
 
 \subsection{Conventions and Notation}
+%%------------------------------
 
 %%=======================================================================
 \section{Functional Idioms}
@@ -105,6 +111,7 @@ In this article I'll attempt to present an answer to that question.
 %
 %
 \subsection{Introduction}
+%%------------------------------
 %
 %
 To start off, let's try to model failure in a functional setting.
@@ -151,9 +158,9 @@ The justification for these laws is not so obvious from the intuitive introducti
 %
 %
 %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Currying}
-%%%%%%%%%%%%%%%%%%%%%%%%
+%%------------------------------
+
 %
 %
 {\em Currying} turns any function into a higher order function of one variable \cite{field}.
@@ -183,6 +190,8 @@ When this partially applied version of $plus$ is called with 6 an unsurprising 1
 
 Listing \ref{curry2} shows an implementation of curry2 in C++: 
 %--
+
+
 \begin{minipage}{\linewidth}
 \begin{lstlisting}[caption=curry for binary operators, label=curry2]
 template <typename R, typename T, typename U>
@@ -194,6 +203,7 @@ std::function<std::function<R (U)> (T)> curry(std::function<R (T,U)> op)
   std::cout << l(1)(1) << std::endl; //prints 6
 \end{lstlisting}
 \end{minipage}
+
 %
 %
 %
@@ -212,10 +222,10 @@ However writing a curry operator or writing curried versions of a function has b
 
 %
 %
-%%===================================
 \subsection{Functor}
 \label{subsec:functor}
-%%===================================
+%%------------------------------
+
 %
 %
 %
@@ -306,12 +316,16 @@ Note that the $id$ function on the left-hand side takes an value of type $a$ whe
 %
 %
 %
-%%%%%===========================================
+%
 \subsection{Applicative Functors and Brackets}
+%%----------------------------------------------
+%
 %
 %
 %
 \subsubsection{Applicatives}
+\label{subsubsec:applicatives}
+%_______________________________________
 %
 %
 %
@@ -359,6 +373,7 @@ The essence of the bracket notion is captured in listing \ref{bracket}
 %
 \subsection{Monads}
 %--------------------
+\label{subsec:monad}
 %
 %
 
@@ -408,7 +423,7 @@ The approach is to provide a definition in the form of a templated struct.
 Typically this struct will have curried and n uncurried version.
 I use stl's $std::function$ template to highlight the interface and return type. 
 However, the speciliazation may in fact be written to support lambda's because lambda's are no automatically converted to
-$std::fucntion$. 
+$std::function$. 
 In some cases the return type can be cumbersome to explicitly state and $auto$ is used instead.
 
 
@@ -440,6 +455,7 @@ This allows specialization for containers since they have more than one template
 %
 %
 \subsection{Applicative Functor and Brackets}
+%%--------------------------------------------------
 %
 %
 %
@@ -493,6 +509,7 @@ A bracket is a convenience function which applies an $n-ary$ pure function to $n
 %
 %
 %
+%%\begin{minipage}{\linewidth}
 \begin {lstlisting} [caption=applicative brackets in c++, label=bracket]
 template <template<typename Tx, typename... D> class Cont, typename F, typename... T> 
 auto bracket (F f, Cont<T>... L) 
@@ -553,6 +570,7 @@ $bracket_helper$ to call.
 %
 %
 \subsection{Monad}
+%%------------------------------
 %
 %
 %
@@ -597,7 +615,7 @@ This function takes an argument of type $A$ and returns a monad of type $B$, jus
 %
 %
 
-A simple way to capture failure without throwing an exception is to have the fucntion return a value and a boolean as part of a tuple.
+A simple way to capture failure without throwing an exception is to have the function return a value and a boolean as part of a tuple.
 If the boolean is true, the computation succeeded and the vlaue is valid. Otherwise, an exception has occured.
 Function composition would also not be so obvious. The first function in the chain would have a simple type as an argument, bout it would return a tuple.
 The second function in the chain would now need to accept this tuple as an argument.
@@ -606,7 +624,7 @@ Another drawback is that This is not a type safe approach.
 The type of this tuple would be a data type and a boolean. Nothing would indicate that this is a special tuple, signifying a failed computation.
 
 Haskell introduces the $Maybe$ type class to handle this.
-The Maybe type class ha two constructors or value :
+The Maybe type class has two constructors or values :
 %
 \begin{eqnarray*}
 \mbox{Maybe}\, a &=& \mbox{None} | \mbox{Just} \, a
@@ -617,15 +635,15 @@ A successful computation returns $Just \, a$ and a failed computation return $No
 Such computataions would have the following function signature : $ a \rightarrow \, \mbox{Maybe}\, b$.
 
  
-The functor would apply the fucntion to the value 'inside' $Just$, or return $None$ if the input was $None$.
+The functor would apply the function to the value 'inside' $Just$, or return $None$ if the input was $None$.
 The Monad allows you to combine functions which return a $Maybe$ type.
 
 %
-\subsection{Maybe Type Class}
+\subsection{Maybe Template Class}
 %----------------------------
 %
 %
-The Maybe template class (or struct) in listing \ref{maybe} is an attempt to capture the spirit of Haskell's $Maybe$ type class
+The Maybe template class (or struct) in listing \ref{maybe} is an attempt to capture the spirit of Haskell's $Maybe$ type class.
 The Maybe class is in fact a wrapper around a $std::pair<A,bool>$, where A is the template class.
 If the boolean member of this pair is false, the Maybe represent a failed computation.
 Otherwise it represents a successful one and the dereference operator $\star$ can be used to get the value.
@@ -653,6 +671,7 @@ Use of these functions is shown in listing \ref{maybeexample}.
 %
 %
 %
+
 \begin{minipage}{\linewidth}
 \begin{lstlisting}[caption=Implementation of the Maybe class, label=maybe]
 
@@ -700,12 +719,14 @@ private:
 };
 \end{lstlisting}
 \end{minipage}
+
 %
 %
 %
 
 %
 %
+
 \begin{minipage}{\linewidth}
 \begin{lstlisting}[caption=auxilliary function for the Maybe class, label=maybeaux]
 
@@ -744,13 +765,14 @@ bool operator!=(const Maybe<A>& l, const Maybe<B>& r) {
 
 \end{lstlisting}
 \end{minipage}
+
 %
 %
 %
 
+%
+%
 
-%
-%
 \begin{minipage}{\linewidth}
 \begin{lstlisting}[caption=Example of the use of Maybe, label=maybeexample]
 [...]
@@ -763,11 +785,7 @@ bool operator!=(const Maybe<A>& l, const Maybe<B>& r) {
 [...]
 \end{lstlisting}
 \end{minipage}
-%
-%
-%
-%
-%
+
 %
 %
 \subsection{Functor}
@@ -820,7 +838,9 @@ struct functor<Maybe> {
 %
 %
 
-A si
+
+Listing \ref{maybeexample} illustrates the use of the $Maybe$ functor.
+The lambda $f$ returns a string.
 
 %
 %
@@ -856,7 +876,7 @@ A si
 %
 %
 \begin{minipage}{\linewidth}
-\begin{lstlisting}[caption=AMaybe applicative functor, label=maybeapp ]
+\begin{lstlisting}[caption=Maybe applicative functor, label=maybeapp ]
 template<>
 struct applicative_functor<Maybe> : public functor <Maybe>
 {
@@ -867,8 +887,6 @@ struct applicative_functor<Maybe> : public functor <Maybe>
 	
 	template<typename A, typename lambda>
 	static auto apply(Maybe<lambda> F , Maybe<A> m) -> decltype(functor<Maybe>::retval(*F, m)) { 
-		// I can't call F.None() because lambda's don't have a default constructor..;
-		//std::function<typename decltype(functor<Maybe>::retval(*F, m))::value_type (A)> ff = *F;
 		return functor<Maybe>::fmap(*F, m);
 	};
 
@@ -884,6 +902,17 @@ struct applicative_functor<Maybe> : public functor <Maybe>
 %
 %
 %
+%
+Listing~\ref{maybeapp} shows the specialization of the applicative functor template for the $Maybe$ class.
+Instead of using $std::function$ the specialization uses a more generic type $lambda$ for the function type.
+This allows the use of inline lambda's, which otherwise would not be possible.
+The $pure$ method lifts a value into the $Maybe$ context.
+In subsection~\ref{subsubsec:applicatives} I mentioned that there is a close relationship between te functor and the applicative functor.
+This is used to implement the apply function. $F$ is the $Maybe$ instance containing the lifted function. 
+It is derefenced to obtain the function for $fmap$.
+It would make sense to test the result of the dereference. However it is not possible to instantiate an $Maybe$ with an empty lambda. 
+
+The use of the applicative functor is illustrated in listing \ref{maybeappexample}.
 
 
 %
@@ -917,6 +946,15 @@ struct applicative_functor<Maybe> : public functor <Maybe>
 \subsection{Monad}
 %-------------------
 %
+
+Monads are used to combine functions which encapsulate exceptions in $Maybe$ 's.
+Listing \ref{maybemonad} shows The specialization of the monad template from section~\ref{subsec:monad} for the $Maybe$ class. 
+The monad is derived from the applicative functor discuseed in the previous section.
+The $mreturn$ method uses it's $pure$ method to put a value into a $Maybe$ instance.
+
+The bind method has a $Maybe$ instance and a function which returns a $Maybe$ as arguments.
+Unless the input is a failed computation and  is equal to $Maybe<T>::None()$, the value contained in the $Maybe$ instance is passed on to the function.
+The result is another $Maybe$ instance returned by $bind$.
 
 
 %
@@ -955,6 +993,14 @@ struct monad<Maybe> : public applicative_functor <Maybe>
 %
 %
 
+The use of the $Maybe$ monad is illustrated in listing~\ref{maybemoandexample}.
+The lambda called $lambda$ returns a $Maybe<std::string>$ with a string value in it when the input is positive.
+Otherwise it returns a 'None' instance of the $Maybe$ class, which represents some kind of failure.
+The monad binds the lambda and a $Maybe<int>$ instance which contains 56 as well as one which contains -89.
+In the former case it results in a suucessful computation.
+In the latter case in a failed one.
+
+The listing also shows how the monad returned by bind is passed onto a second monad which binds it to an in-line lambda function.
 
 %
 %
@@ -995,19 +1041,54 @@ struct monad<Maybe> : public applicative_functor <Maybe>
 \section{Either}
 %=============================================================
 %
+%
+%
 
 \subsection{Motivation}
 %------------------------
 %
+%
+
+The Maybe type discussed in the previous section was used to handle exceptions ins a type safe and functional way.
+One drawback was that it is not possible to pass on a stack trace or othet information on the failure.  
+If the computation fails no additional information is passed back to the caller other than that the state is $None$.
+
+Haskell's Either type class represents a computation which can return two values:
+\begin{eqnarray*}
+\mbox {Either} \; a \; b = \mbox{Left} \; a \, | \, \mbox{Right} \; b
+\end{eqnarray*}
+
+The Either type has two slots, with two different data types called $Left$ and $Right$. 
+Data in in either of these two slots, but not both.
+So instead of using the $Maybe$ type instead the $Either$ type can be used. 
+The result of the computation could be stored in the $Right$ slot and exception information in the $Left$ slot.
 
 \subsection{Either Type Class}
 %--------------------------------
 %
+%
+%
+
+The $Either$ template class shown in \ref{either} is a wrapper around a C++ tuple with three types : $std::tuple<L,R,bool>$.
+The boolean in the last slot indicates which of the other two slots is active.
+The implementation does require that the types $L$ and $R$ have default constructors.
+As we 'll see this does preclude us from using C++ lambda's for the applicative functor.
+
+The constructors of the $Either$ class are private and the $Left$ or $Right$ factory methods must be used to create an $Either$ instance.
+The assignment operator is deleted. 
+$Either$ instances cannot be reasigned and it makes them somewhat immutable.
+
+The $Left()$ and $Right()$ methods are used to determine which 'slot' is set.
+The (lower case) $left()$ and $right()$ return the value in the slot.
+These functions are unsafe, in the sense that the caller would need to test wich slot the active one is before calling these.
+The auxilliary functions $Left(..)$ and $Right(...)$ in listing~\ref{eitheraux} are safer versions of the these methods.
+They return a $Maybe$ instance.
 
 %
 %
 \begin{minipage}{\linewidth}
 \begin{lstlisting}[caption=Either type class,label=either]
+
 template <typename L, typename R>
 struct Either {
 
@@ -1027,7 +1108,7 @@ struct Either {
 	}
 
 	bool Left() const {
-		return value.second;
+		return std::get<2>(value);
 	}
 
 	bool Right()  const {
@@ -1035,49 +1116,43 @@ struct Either {
 	}
 
 	const L& left() const {
-		return value.first.first;
+		//return value.first.first;
+		std::get<0>(value);
 	}
 
 	const R& right() const {
-		return value.first.second;
+		//return value.first.second;
+		std::get<1>(value);
 	}
 
  	std::ostream& pp(std::ostream& strm) const {
 		strm << "Either<" <<  typeid(L).name() << "," << typeid(R).name() << ">";;
-		if (value.second) {
-			strm << "[" << value.first.first << ", null]";
+		if (std::get<2>(value)) {
+			strm << "[" << left() << ", null]";
 		}
 		else {
-			strm << "[null," << value.first.second << "]"; 
+			strm << "[null," << right() << "]"; 
 		}
 		return strm;
 	}
 
 	bool eq(const Either& o) const {
 		auto eqval = [this] (const value_t& l, const value_t& r) {
-			if (value.second) return l.first == r.first;
-			return l.second == r.second;
+			if (std::get<2>(value)) return std::get<0>(l) == std::get<0>(r);
+			return std::get<1>(l) == std::get<1>(r);
 		};
-		return ((value.second == o.value.second)
-				&& eqval(value.first, o.value.first));
+		return ((std::get<2>(value) == std::get<2>(o.value))
+				&& eqval(value, o.value));
 	}
 
 private :
-	Either (L val, bool left) : value(std::make_pair(std::make_pair(val,R()) , true)) {}
-	Either (R val) : value(std::make_pair(std::make_pair(L(),val) , false)) {}
+	Either (L val, bool left) : value(std::make_tuple(val,R(), true)) {}
+	Either (R val) : value(std::make_tuple(L(),val,false)) {}
 
-	//Either (L val, bool left) : value(std::make_pair(value_t(val) , true)) {}
-	//Either (R val) : value(std::make_pair(value_t(val) , false)) {}
+	typedef std::tuple<L,R,bool> value_t;
 
-	/*
-	typedef struct {
-		L  first;
-		R  second;
-	} value_t;
-	*/
+	value_t value;
 	
-	typedef std::pair<L,R> value_t;
-	std::pair<value_t, bool> value;
 };
 
 \end{lstlisting}
@@ -1140,6 +1215,7 @@ bool operator!=(const Either<A,B>& a, const Either<C,D>& b) {
 %
 %
 
+Listing \ref{eitherexamp} shows a simpel example of the use of the $Either$ class.
 
 %
 %
@@ -1166,6 +1242,16 @@ bool operator!=(const Either<A,B>& a, const Either<C,D>& b) {
 %----------------------
 %
 
+The curried and uncurried version of the $Functor$ template speciliaztion for the $Either$ is shown in listing \ref{eitherfunctor}.
+The $Either$ template class has tow type parameters: One for its left and one for its right slot.
+
+The body of $fmap$ applies the function to the contents of the right slot of the $Either$ instance.
+If the left slot is used, $fmap$ returns a new $Either$ instance with its left value set to the left value of the input.
+The type of the right slot of the returned $Either$ instance is determined by using $decltype(FA())$ where $f$ is the input 
+lambda and $A$ the type of the right slot of the $Either$ instance.
+
+The returm type of $fmap$ is declared $auto$ and is specified after the input parameter list, since it refers back to input parameter $f$.
+The implementatioon of $fmap$ for $Maybe$ and $Either$ are very similar.
 
 %
 %
@@ -1198,11 +1284,20 @@ struct functor<Either> {
 %
 %
 
+Listing~\ref{eitherfunctorexamp} shows an example of the use of the functor.
+The lambda adds $2$ to the input and is mapped over two different instances of $Either$.
+In the first instance the right slot contains the value $45$.
+$Fmap$ returns $Either \; 47$.
+The second instance contains a string.
+Here $fmap$ returns a instance with this string in its left slot.
+
+Note that $fmap$ can't change the active slot of the $Either$ value it is applied to.
+The input function to $fmap$ is a pure function and it evaluates without side effects captured in an $Either$ instance. 
 
 %
 %
 \begin{minipage}{\linewidth}
-\begin{lstlisting}[caption=Example of the Either functor,lbel=eitherfunctorexamp]
+\begin{lstlisting}[caption=Example of the Either functor,label=eitherfunctorexamp]
 [...]
 	auto v1 = Either<std::string, int>::Right(45);
 	auto v2 = Either<std::string, int>::Left("a value");
@@ -1223,6 +1318,12 @@ struct functor<Either> {
 %-------------------------------
 %
 
+Listing~\ref{eitherapp} shows the specialization of the applicative functor template.
+
+Similar to the functor the applicative functor also works only on the right slot of the $Eitehr$ instance.
+The $pure$ method puts a value into the right slot of an $Either$ instance.
+The $bind$ method is implemeneted using $fmap$. 
+The unsafe $right$ method is called on to get the input function to $fmap$ from the right slot.
 
 %
 %
@@ -1256,22 +1357,42 @@ struct applicative_functor<Either> : public functor <Either>
 %
 %
 
+The role of the applicative functor is to apply n-ary pure functions to values in a $conext$ like $Either$.
+The $pure$ method is used to 'lift' the function into the container, and bind is than use dto apply the function to values in the containers.
+This is illustared in listing~\ref{eitherappexamp} where the applicative functor is used to add two values contained in the right slot of two 
+different $Either$ instances together using the $std::plus$ C++ function object.
+
+The first step is to curry $std::plus$, since the applicative functor works only with unary function.
+The return type of $curry$ is captured explicitly as a instance of $std::function$. 
+The alternative would be to capture the return type using the $auto$ declaration, but in that case the type would in fact be that of a C++ lambda.
+Since C++ lambda's doen' have default constructors this would not work with the fucntor and applicative functor specialization presented here.
+The implementation of $Either$ assumes that its template classes have default constructors. 
+
+Next the curried function $cf$ is lifted into the $Either$ context using $pure$.
+The first application of $bind$ returns an $Either$ instance with $cf$ partially applied to $23$.
+The second application of bind returns an $Either$ instance with $68$ in its right slot.
+
 
 %
 %
 \begin{minipage}{\linewidth}
-\begin{lstlisting}[caption=Either applicative, label=eitherapp]
+\begin{lstlisting}[caption=Either applicative, label=eitherappexamp]
 [...]
-	auto v1 = Either<std::string, int>::Right(45);
-	auto v2 = Either<std::string, int>::Left("a value");
+    auto f = std::plus<int>();
 
-	auto l = [](int x) {
-		return 2+x*3;
-	};
+	std::function<std::function<int(int)> (int)> cf = 	curry<decltype(f),int,int>(f);
+	std::cerr << " 23 + 45 = " << f(23,45) << std::endl;
+	std::cerr << " 23 + 45 = " << cf(23)(45) << std::endl;
 
-	auto ll = applicative_functor<Either>::pure<std::string>(l);
-	std::cerr << v1 << " --> " << applicative_functor<Either>::apply(ll, v1) << std::endl;
-	std::cerr << v2 << " --> " << functor<Either>::fmap(l, v2) << std::endl;
+	auto F   = applicative_functor<Either>::pure<std::string>(cf);
+	auto V1  = applicative_functor<Either>::pure<std::string>(23);
+	auto V2  =  applicative_functor<Either>::pure<std::string>(45);
+	std::cerr << V1 << " " << V2 << std::endl;  
+	
+	auto A1  = applicative_functor<Either>::apply(F,  V1);
+	auto A2  = applicative_functor<Either>::apply(A1, V2);
+	std::cerr << A2 << std::endl;  
+
 [...]
 \end{lstlisting}
 \end{minipage}
@@ -1283,6 +1404,10 @@ struct applicative_functor<Either> : public functor <Either>
 \subsection{Monad}
 %------------------
 %
+%
+%
+
+
 
 %
 %
@@ -1889,16 +2014,20 @@ This corresponds to function composition.
 
 
 \subsection{Monad}
+%%------------------------------
 
 
 
 
-
-
+%===========================================================
 \section{Stateful Computations}
-
+%===========================================================
 
 \subsection{Capturing State}
+%%------------------------------
+%
+%
+
 A change in state $s$ is represented by a function $s \rightarrow (a,s)$. 
 $a$ is the value associated with the state change.
 The state $s$ is mutable.
@@ -2425,7 +2554,7 @@ The monadic function $f$ noew returns a different state, depending on whether th
 %
 
 \subsection{Capturing Future Values}
-
+%%------------------------------
 %
 %
 %
@@ -2507,16 +2636,18 @@ Maybe<B> runFutureValue(future_value<A,B> fv, A arg)
 %
 
 \subsection{Functor}
-
+%%------------------------------
 
 \subsection{Applicative Functor}
-
+%%------------------------------
 
 \subsection{Monad}
+%%------------------------------
 
 
-
+%===========================================================
 \section{Discussion}
+%===========================================================
 
  The implemention of...
 

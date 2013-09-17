@@ -2,6 +2,7 @@
 #define h__either__h
 #include "maybe.hpp"
 
+
 template <typename L, typename R>
 struct Either {
 
@@ -21,58 +22,50 @@ struct Either {
 	}
 
 	bool Left() const {
-		return value.second;
+		return std::get<2>(value);
 	}
 
 	bool Right()  const {
 		return (! Left());
 	}
 
-	const L& left() const {
-		return value.first.first;
-	}
-
-	const R& right() const {
-		return value.first.second;
-	}
-
  	std::ostream& pp(std::ostream& strm) const {
 		strm << "Either<" <<  typeid(L).name() << "," << typeid(R).name() << ">";;
-		if (value.second) {
-			strm << "[" << value.first.first << ", null]";
+		if (std::get<2>(value)) {
+			strm << "[" << left() << ", null]";
 		}
 		else {
-			strm << "[null," << value.first.second << "]"; 
+			strm << "[null," << right() << "]"; 
 		}
 		return strm;
 	}
 
 	bool eq(const Either& o) const {
 		auto eqval = [this] (const value_t& l, const value_t& r) {
-			if (value.second) return l.first == r.first;
-			return l.second == r.second;
+			if (std::get<2>(value)) return std::get<0>(l) == std::get<0>(r);
+			return std::get<1>(l) == std::get<1>(r);
 		};
-		return ((value.second == o.value.second)
-				&& eqval(value.first, o.value.first));
+		return ((std::get<2>(value) == std::get<2>(o.value))
+				&& eqval(value, o.value));
+	}
+
+	const L& left() const {
+	   return std::get<0>(value);
+	}
+
+	const R& right() const {
+		return std::get<1>(value);
 	}
 
 private :
-	Either (L val, bool left) : value(std::make_pair(std::make_pair(val,R()) , true)) {}
-	Either (R val) : value(std::make_pair(std::make_pair(L(),val) , false)) {}
-
-	//Either (L val, bool left) : value(std::make_pair(value_t(val) , true)) {}
-	//Either (R val) : value(std::make_pair(value_t(val) , false)) {}
-
-	/*
-	typedef struct {
-		L  first;
-		R  second;
-	} value_t;
-	*/
+	Either (L val, bool left) : value(std::make_tuple(val,R(),true)) {}
+	Either (R val) : value(std::make_tuple(L(), val,false)) {}
 	
-	typedef std::pair<L,R> value_t;
-	std::pair<value_t, bool> value;
+	typedef std::tuple<L,R,bool> value_t;
+	value_t value;
+	
 };
+
 
 template<typename A, typename B>
 std::ostream& operator<<(std::ostream& strm, const Either<A,B>& E) 

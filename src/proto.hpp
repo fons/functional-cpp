@@ -16,11 +16,13 @@ extern int eim_0();
 extern int eim_1();
 extern int eim_2();
 extern int eim_3();
+extern int eim_4();
 
 extern int ei_0();
 extern int ei_1();
 extern int ei_2();
 extern int ei_3();
+extern int ei_4();
 
 extern int mb_0();
 extern int mb_1();
