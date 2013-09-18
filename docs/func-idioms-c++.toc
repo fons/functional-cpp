@@ -26,39 +26,39 @@
 \contentsline {section}{\numberline {5}Either}{16}
 \contentsline {subsection}{\numberline {5.1}Motivation}{16}
 \contentsline {subsection}{\numberline {5.2}Either Type Class}{16}
-\contentsline {subsection}{\numberline {5.3}Functor}{18}
-\contentsline {subsection}{\numberline {5.4}Applicative Functor}{19}
-\contentsline {subsection}{\numberline {5.5}Monad}{21}
-\contentsline {section}{\numberline {6}Lists and ZipLists}{22}
-\contentsline {subsection}{\numberline {6.1}Functor}{22}
-\contentsline {subsection}{\numberline {6.2}Applicative Functor}{22}
-\contentsline {subsubsection}{\numberline {6.2.1}List}{22}
-\contentsline {subsubsection}{\numberline {6.2.2}ZipList}{23}
-\contentsline {subsection}{\numberline {6.3}Brackets}{24}
-\contentsline {subsection}{\numberline {6.4}Monad}{24}
-\contentsline {section}{\numberline {7}Shared Pointers}{25}
-\contentsline {subsection}{\numberline {7.1}Shared pointers}{25}
-\contentsline {subsection}{\numberline {7.2}Functor}{25}
-\contentsline {subsection}{\numberline {7.3}Applicative Functor}{25}
-\contentsline {subsection}{\numberline {7.4}Monad}{25}
-\contentsline {section}{\numberline {8}List of Shared Pointers}{26}
-\contentsline {subsection}{\numberline {8.1}Functor}{26}
-\contentsline {subsection}{\numberline {8.2}Applicative Functor}{26}
-\contentsline {subsection}{\numberline {8.3}Monad}{27}
-\contentsline {section}{\numberline {9}Unary Operations}{27}
-\contentsline {subsection}{\numberline {9.1}Unary Operations and Curried Functions}{27}
-\contentsline {subsection}{\numberline {9.2}Functor}{27}
-\contentsline {subsection}{\numberline {9.3}Applicative Functor}{28}
-\contentsline {subsection}{\numberline {9.4}Monad}{28}
-\contentsline {section}{\numberline {10}Stateful Computations}{28}
-\contentsline {subsection}{\numberline {10.1}Capturing State}{28}
-\contentsline {subsection}{\numberline {10.2}Functor}{31}
-\contentsline {subsection}{\numberline {10.3}Applicative Functor}{33}
-\contentsline {subsection}{\numberline {10.4}Monad}{34}
-\contentsline {section}{\numberline {11}Futures and Future Values}{36}
-\contentsline {subsection}{\numberline {11.1}Futures and Async}{36}
-\contentsline {subsection}{\numberline {11.2}Capturing Future Values}{36}
-\contentsline {subsection}{\numberline {11.3}Functor}{37}
-\contentsline {subsection}{\numberline {11.4}Applicative Functor}{37}
-\contentsline {subsection}{\numberline {11.5}Monad}{37}
-\contentsline {section}{\numberline {12}Discussion}{37}
+\contentsline {subsection}{\numberline {5.3}Functor}{19}
+\contentsline {subsection}{\numberline {5.4}Applicative Functor}{20}
+\contentsline {subsection}{\numberline {5.5}Monad}{22}
+\contentsline {section}{\numberline {6}Lists and ZipLists}{23}
+\contentsline {subsection}{\numberline {6.1}Functor}{23}
+\contentsline {subsection}{\numberline {6.2}Applicative Functor}{23}
+\contentsline {subsubsection}{\numberline {6.2.1}List}{23}
+\contentsline {subsubsection}{\numberline {6.2.2}ZipList}{24}
+\contentsline {subsection}{\numberline {6.3}Brackets}{25}
+\contentsline {subsection}{\numberline {6.4}Monad}{26}
+\contentsline {section}{\numberline {7}Shared Pointers}{26}
+\contentsline {subsection}{\numberline {7.1}Shared pointers}{26}
+\contentsline {subsection}{\numberline {7.2}Functor}{27}
+\contentsline {subsection}{\numberline {7.3}Applicative Functor}{27}
+\contentsline {subsection}{\numberline {7.4}Monad}{28}
+\contentsline {section}{\numberline {8}List of Shared Pointers}{28}
+\contentsline {subsection}{\numberline {8.1}Functor}{28}
+\contentsline {subsection}{\numberline {8.2}Applicative Functor}{28}
+\contentsline {subsection}{\numberline {8.3}Monad}{30}
+\contentsline {section}{\numberline {9}Unary Operations}{30}
+\contentsline {subsection}{\numberline {9.1}Unary Operations and Curried Functions}{30}
+\contentsline {subsection}{\numberline {9.2}Functor}{30}
+\contentsline {subsection}{\numberline {9.3}Applicative Functor}{30}
+\contentsline {subsection}{\numberline {9.4}Monad}{30}
+\contentsline {section}{\numberline {10}Stateful Computations}{30}
+\contentsline {subsection}{\numberline {10.1}Capturing State}{30}
+\contentsline {subsection}{\numberline {10.2}Functor}{33}
+\contentsline {subsection}{\numberline {10.3}Applicative Functor}{35}
+\contentsline {subsection}{\numberline {10.4}Monad}{36}
+\contentsline {section}{\numberline {11}Futures and Future Values}{38}
+\contentsline {subsection}{\numberline {11.1}Futures and Async}{38}
+\contentsline {subsection}{\numberline {11.2}Capturing Future Values}{38}
+\contentsline {subsection}{\numberline {11.3}Functor}{39}
+\contentsline {subsection}{\numberline {11.4}Applicative Functor}{39}
+\contentsline {subsection}{\numberline {11.5}Monad}{39}
+\contentsline {section}{\numberline {12}Discussion}{39}

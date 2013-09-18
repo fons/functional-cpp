@@ -9,7 +9,7 @@
 \usepackage{bbm}
 \usepackage[cm]{fullpage}
 
-\definecolor{light-gray}{gray}{0.75}
+\definecolor{light-gray}{gray}{0.85}
 
 \lstset{ %
 language=C++,                   % choose the language of the code
@@ -27,7 +27,9 @@ tabsize=2,                      % sets default tabsize to 2 spaces
 captionpos=b,                   % sets the caption-position to bottom
 breaklines=true,                % sets automatic line breaking
 breakatwhitespace=false,        % sets if automatic breaks should only happen at whitespace
-escapeinside={\%*}{*)}          % if you want to add a comment within your code
+escapeinside={\%*}{*)},          % if you want to add a comment within your code
+aboveskip=1em,
+belowskip=1em
 }
 
 \lstloadlanguages{% Check Dokumentation for further languages ...
@@ -1776,11 +1778,77 @@ struct functor<std::shared\_ptr> {
 %
 \subsection{Functor}
 %----------------------
+
+\begin{minipage}{\linewidth}
+\begin{lstlisting}[caption=functor implemention for std::shared\_ptr, label=ptrfunctor]
+template <>
+struct functor<std::shared_ptr> {
+
+  template<typename A, typename B>
+  static std::function<std::shared_ptr<B> (std::shared_ptr<A>)>  fmap (std::function<B(A)> f) {
+    return [f](std::shared_ptr<A> v) {
+      if (v) {
+	return std::make_shared<B>(f(*v)); 
+      }
+      return  std::shared_ptr<B>(nullptr);
+    };
+  }
+
+  template<typename A, typename B, typename F>
+  static std::function<std::shared_ptr<B> (std::shared_ptr<A>)>  fmap (F f) {
+    return [f](std::shared_ptr<A> v) {
+      if (v) {
+	return std::make_shared<B>(f(*v)); 
+      }
+      return  std::shared_ptr<B>(nullptr);
+    };
+  }
+};
+\end{lstlisting}
+\end{minipage}
    
 %
 \subsection{Applicative Functor}
 %--------------------------------
  
+\begin{minipage}{\linewidth}
+\begin{lstlisting}[caption=applicative functor implemention for std::shared\_ptr, label=ptrapp]
+template<>
+struct applicative_functor <std::shared_ptr> : public functor<std::shared_ptr>
+{
+
+	template<typename A>
+	static std::shared_ptr<A> pure(A val) {
+		return std::make_shared<A>(val);
+	}
+
+	
+	template<typename A, typename B>
+	static std::function< std::shared_ptr<B> (std::shared_ptr<A> v)> apply(std::shared_ptr<std::function<B(A)>> f) {
+		return [f](std::shared_ptr<A> v) {
+			if (v && f) {
+				auto F = *f;
+				return pure (F(*v)); 
+			}
+			return  std::shared_ptr<B>(nullptr);
+		};
+    }
+
+	template<typename A, typename B, typename lambda>
+	static std::function< std::shared_ptr<B> (std::shared_ptr<A> v)> apply(std::shared_ptr<lambda> f) {
+		return [f](std::shared_ptr<A> v) {
+			if (v && f) {
+				auto F = *f;
+				return pure (F(*v)); 
+			}
+			return  std::shared_ptr<B>(nullptr);
+		};
+    }
+    
+};
+\end{lstlisting}
+\end{minipage}
+
    
 %
 \subsection{Monad}
@@ -1810,7 +1878,7 @@ template<> struct monad<std::shared_ptr> : public applicative_functor<std::share
 %
 %
 
-In \ref{ptrmonad} I show the monad implementation for $std::shared_ptr$. 
+In \ref{ptrmonad} I show the monad implementation for $std::shared\_ptr$. 
 The validity of the shared pointer is checked before it is dereferenced and its value passed on to the function $f$.
 If the shared pointer is empty (or invalid), an empty shared pointer of type $B$ is returned.
 This implies that a chain of monadic computations can return null if any one of its individual computations fails.
