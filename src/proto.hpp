@@ -36,6 +36,12 @@ extern int mbm_1();
 extern int mbm_2();
 
 extern int fv_0();
+extern int fv_1();
+extern int fv_2();
+
+extern int fvm_0();
+extern int fvm_1();
+extern int fvm_2();
 
 extern int st_0();
 extern int st_1();

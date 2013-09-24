@@ -66,4 +66,24 @@ std::ostream& operator<<(std::ostream& strm, std::shared_ptr<T> t)
   return strm <<  "NULL)";
 }
 
+template <typename Ret, typename Arg>
+std::ostream& operator<<(std::ostream& strm, std::function<Ret(Arg)> F)
+{
+	strm << "std::function<" 
+		 << typeid(Ret).name() 
+		 << "(" 
+		 << typeid(Arg).name() 
+		 << ")>";
+	return strm;
+}
+
+template <typename Ret, typename Arg1, typename Arg2>
+std::ostream& operator<<(std::ostream& strm, std::function<Ret(Arg1, Arg2)> F)
+{
+	strm << "std::function<" 
+		 << typeid(Ret).name() 
+		 << "(" << typeid(Arg1).name() << "," << typeid(Arg2).name() << ")>";
+	return strm;
+}
+
 #endif
