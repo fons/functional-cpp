@@ -27,7 +27,7 @@ struct future_value {
 	Maybe<Ret> operator()(Arg... args) {
 		try {
 			auto th = thunk(F, args...);
-			auto f = std::async([&th]{return th();});
+			auto f  = std::async([&th]{return th();});
 			return just(f.get());
 		} catch (const std::exception& e) {
 			std::cerr << "exception : " << e.what() << std::endl;
@@ -132,7 +132,7 @@ int fv_2()
 	std::function<float(int, int, float)> f = [](int x, int y, float z) { return z *(34*x - x*y);};
 	auto fv = make_future_value(f);
 	std::cerr << fv << std::endl;
-	//auto res = runFutureValue(fv, 1,2,0.45677); //std::string("hello")); //, 1, 56, 56.89);
-	//std::cerr << res << std::endl;
+	auto res = runFutureValue<float,int,int,float>(fv, 1,2,0.45677); 
+	std::cerr << res << std::endl;
 	return 1;
 }
