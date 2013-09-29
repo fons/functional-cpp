@@ -1,6 +1,33 @@
 #ifndef h__show__h
 #define h__show__h
 
+
+template <int n, typename Arg0, typename... Args>
+struct args_printer
+{
+	static std::ostream& pp(std::ostream& strm)  {
+		strm << typeid(Arg0).name() << ",";
+		args_printer<n-1, Args...>::pp(strm);
+		return strm;
+	}
+	
+};
+
+template<typename Arg0>
+struct args_printer<1, Arg0>
+{
+	static std::ostream& pp(std::ostream& strm)  {
+		strm << typeid(Arg0).name();
+		return strm;
+	}
+};
+
+template <typename... A>
+std::ostream& typeids(std::ostream& strm) {
+	args_printer<sizeof...(A), A...>::pp(strm);
+	return strm;
+}
+
 template<typename T>
 std::ostream& operator<<(std::ostream& strm, const std::forward_list<T>& L) 
 {
@@ -66,24 +93,17 @@ std::ostream& operator<<(std::ostream& strm, std::shared_ptr<T> t)
   return strm <<  "NULL)";
 }
 
-template <typename Ret, typename Arg>
-std::ostream& operator<<(std::ostream& strm, std::function<Ret(Arg)> F)
+template <typename Ret, typename... Arg>
+std::ostream& operator<<(std::ostream& strm, std::function<Ret(Arg...)> F)
 {
 	strm << "std::function<" 
 		 << typeid(Ret).name() 
-		 << "(" 
-		 << typeid(Arg).name() 
-		 << ")>";
+		 << "(" ;
+	typeids<Arg...>(strm); 
+	strm << ")>";
 	return strm;
 }
 
-template <typename Ret, typename Arg1, typename Arg2>
-std::ostream& operator<<(std::ostream& strm, std::function<Ret(Arg1, Arg2)> F)
-{
-	strm << "std::function<" 
-		 << typeid(Ret).name() 
-		 << "(" << typeid(Arg1).name() << "," << typeid(Arg2).name() << ")>";
-	return strm;
-}
+
 
 #endif

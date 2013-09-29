@@ -12,6 +12,11 @@
 #include <memory>
 #include <random>
 
+extern int th_0();
+extern int th_1();
+extern int th_2();
+
+
 extern int eim_0();
 extern int eim_1();
 extern int eim_2();
@@ -42,6 +47,10 @@ extern int fv_2();
 extern int fvm_0();
 extern int fvm_1();
 extern int fvm_2();
+extern int fvm_3();
+extern int fvm_4();
+extern int fvm_5();
+
 
 extern int st_0();
 extern int st_1();

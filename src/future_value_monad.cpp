@@ -3,7 +3,7 @@
 #include "future_value_monad.hpp"
 #include "curry.hpp"
 #include "bracket.hpp"
-
+#if 0
 template<>
 struct functor<future_value> {
 
@@ -51,11 +51,11 @@ struct applicative_functor<future_value> : public functor <future_value>
 	*/
 
 };
-
+#endif
 
 int fvm_0()
 {
-
+#if 0
 	std::function<int(int)> f = [](int x) { 
 		std::cerr << "start..." << std::endl;
 		int n = 5;
@@ -86,13 +86,13 @@ int fvm_0()
 	std::cerr << r0 << std::endl;
 	auto r1 = runFutureValue(fv, -23);
 	std::cerr << r1 << std::endl;
-
+#endif
 	return 0;
 }
 
 int fvm_1()
 {
-
+#if 0
 	std::function<int(int)> f = [](int x) { 
 		std::cerr << "start..." << std::endl;
 		int n = 5;
@@ -129,11 +129,13 @@ int fvm_1()
 	auto r0 = runFutureValue(fv1, 45);
 	std::cerr << r0 << std::endl;
 
+#endif
 	return 0;
 }
 
 int fvm_2()
 {
+#if 0
 	auto fv = applicative_functor<future_value>::pure<int,int>(4500);
 
 	auto r0 = runFutureValue(fv, 45);
@@ -145,8 +147,37 @@ int fvm_2()
 
 	auto r1 = runFutureValue(fw, 45);
 	std::cerr << r1 << std::endl;
-	std::function<std::string(float)> F;
-	std::cerr << F << std::endl;
+
+#endif
+
+	return 0;
+}
+
+int fvm_3()
+{
+#if 0
+	std::function<int(int)> func1 =[](int x) { return 5*x + 34;};
+	std::function<int(int)> func2 =[](int x) { return 5-x;};
+
+	auto fw = applicative_functor<future_value>::pure<int,decltype(func1)>(func1);
+	future_value<int,int> fvv(func2);	
+	auto fv = applicative_functor<future_value>::apply(fw, fvv);
+
+	auto r1 = runFutureValue(fv, 45);
+	std::cerr << r1 << std::endl;
+#endif
+
+	return 0;
+}
+int fvm_4()
+{
+
+
+	return 0;
+}
+int fvm_5()
+{
+
 
 	return 0;
 }
