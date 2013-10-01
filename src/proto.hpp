@@ -1,3 +1,4 @@
+
 #ifndef __proto__
 #define __proto__
 
@@ -43,6 +44,9 @@ extern int mbm_2();
 extern int fv_0();
 extern int fv_1();
 extern int fv_2();
+extern int fv_3();
+extern int fv_4();
+extern int fv_5();
 
 extern int fvm_0();
 extern int fvm_1();

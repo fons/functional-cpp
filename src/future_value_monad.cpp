@@ -3,12 +3,12 @@
 #include "future_value_monad.hpp"
 #include "curry.hpp"
 #include "bracket.hpp"
-#if 0
+
 template<>
 struct functor<future_value> {
 
 	//curried version
-	template<typename Arg, typename Ret, typename lambda>
+	template<typename Ret, typename Arg, typename lambda>
 	static auto fmap(lambda f) {  // -> std::function < FutureValue<T, decltype(f(A()))> (future_value<T,A>)> {
 		return [&f](future_value<Arg,Ret> e) {
 			return fmap(f, e);
@@ -17,8 +17,8 @@ struct functor<future_value> {
 	
 	// uncurried, for functions..
 	
-	template<typename Arg, typename Ret, typename lambda>
-	static auto fmap(lambda f, future_value<Arg,Ret> e) -> future_value<Arg, decltype(f(Ret()))> {
+	template<typename Ret, typename Arg, typename lambda>
+	static auto fmap(lambda f, future_value<Ret,Arg> e) -> future_value<decltype(f(Ret())), Arg> {
 		return make_future_value(f) + e;
 	};
 };
@@ -28,17 +28,24 @@ template <>
 struct applicative_functor<future_value> : public functor <future_value>
 {
 
-	template <typename Arg, typename Ret> 
-	static future_value<Arg, Ret>  pure(Ret val) {
+	template <typename Ret, typename Arg> 
+	static future_value<Ret, Arg>  pure(Ret val) {
 		std::function<Ret(Arg)> F = [val] (Arg arg) {
 			return val;
 		};
 		return make_future_value(F);
 	}
-
-	template<typename Arg, typename Ret, typename lambda>
-	static auto apply(future_value<Ret, lambda> F , future_value <Arg, Ret> m) {
-		return F + m;
+	
+	template <typename A, typename B, typename R>
+	static future_value<R,A> apply(future_value<std::function<R(B)>,A> F, future_value<B,A> L) {
+		std::function<R(A)> Func =  [F,&L] (A x) {
+			// this can be run in parallel..
+			auto val = runFutureValue(L, x);
+			auto rev = runFutureValue(F, x);
+			//Need some error checking..
+			return (*rev)(*val);
+		};
+		return make_future_value(Func);
 	};
 	
 	/*
@@ -51,11 +58,11 @@ struct applicative_functor<future_value> : public functor <future_value>
 	*/
 
 };
-#endif
+
 
 int fvm_0()
 {
-#if 0
+
 	std::function<int(int)> f = [](int x) { 
 		std::cerr << "start..." << std::endl;
 		int n = 5;
@@ -86,13 +93,13 @@ int fvm_0()
 	std::cerr << r0 << std::endl;
 	auto r1 = runFutureValue(fv, -23);
 	std::cerr << r1 << std::endl;
-#endif
+
 	return 0;
 }
 
 int fvm_1()
 {
-#if 0
+
 	std::function<int(int)> f = [](int x) { 
 		std::cerr << "start..." << std::endl;
 		int n = 5;
@@ -129,13 +136,12 @@ int fvm_1()
 	auto r0 = runFutureValue(fv1, 45);
 	std::cerr << r0 << std::endl;
 
-#endif
 	return 0;
 }
 
 int fvm_2()
 {
-#if 0
+
 	auto fv = applicative_functor<future_value>::pure<int,int>(4500);
 
 	auto r0 = runFutureValue(fv, 45);
@@ -143,29 +149,35 @@ int fvm_2()
 	
 	std::function<int(int)> func =[](int x) { return 5*x + 34;};
 	
-	auto fw = applicative_functor<future_value>::pure<int,decltype(func)>(func);
+	auto fw = applicative_functor<future_value>::pure<decltype(func), int>(func);
 
 	auto r1 = runFutureValue(fw, 45);
-	std::cerr << r1 << std::endl;
 
-#endif
+	std::cerr << r1 << " ----> " << (*r1)(70) << std::endl;
 
 	return 0;
 }
 
 int fvm_3()
 {
-#if 0
+
 	std::function<int(int)> func1 =[](int x) { return 5*x + 34;};
 	std::function<int(int)> func2 =[](int x) { return 5-x;};
-
-	auto fw = applicative_functor<future_value>::pure<int,decltype(func1)>(func1);
+	//future_value<std::function<R(B)>,A>
+	future_value<std::function<int(int)>, int> fw = applicative_functor<future_value>::pure<decltype(func1), int>(func1);
+	std::cerr << fw << std::endl;
+	auto ty = runFutureValue(fw, 67);
+	std::cerr << ty << std::endl;
+	
 	future_value<int,int> fvv(func2);	
-	auto fv = applicative_functor<future_value>::apply(fw, fvv);
+	std::cerr << fvv << std::endl;
 
-	auto r1 = runFutureValue(fv, 45);
+	auto r1 = runFutureValue(fvv, 45);
 	std::cerr << r1 << std::endl;
-#endif
+
+	auto fv = applicative_functor<future_value>::apply<int,int,int>(fw, fvv);
+	auto r0 = runFutureValue(fv, 45);
+	std::cerr << r0 << std::endl;
 
 	return 0;
 }
