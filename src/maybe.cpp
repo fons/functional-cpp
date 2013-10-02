@@ -22,6 +22,15 @@ int mb_1()
 	auto g = [](){return just(std::make_pair(34,"hello"));};
 	auto v1 = f();
 	auto v2 = g();
+
+	if (v1 == Maybe<void*>::None()) {
+		std::cerr << "v1 is none..." << std::endl;
+	}
+
+	if (v2 != NONE) {
+		std::cerr << "v2 is not none..." << std::endl;
+	}
+
 	std::cerr << v1 << "," << v2 << std::endl;
 
 	if (v1 == none<std::string>()) {
@@ -73,7 +82,14 @@ int mb_1()
 	if (Maybe<int>::None() != Maybe<std::string>::None()) {
 		std::cerr << Maybe<int>::None() << " != " << Maybe<std::string>::None() << std::endl;
 	}
+
 	
+	auto p = Maybe<std::function<int(int)>>::None();
+	std::function<int(int)> fint = [] (int x) { return 2*x-3;};
+	std::cerr << p << std::endl;
+	//if (fint == fint) {
+	//	std::cerr << "p == p for function" << std::endl;
+	//}
 	return 0;
 }
 

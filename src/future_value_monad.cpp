@@ -37,25 +37,27 @@ struct applicative_functor<future_value> : public functor <future_value>
 	}
 	
 	template <typename A, typename B, typename R>
-	static future_value<R,A> apply(future_value<std::function<R(B)>,A> F, future_value<B,A> L) {
-		std::function<R(A)> Func =  [F,&L] (A x) {
+	static future_value<R,A> apply(const future_value<std::function<R(B)>,A>& F, const future_value<B,A>& L) {
+		std::function<R(A)> Func =  [F,L] (A x) {
 			// this can be run in parallel..
 			auto val = runFutureValue(L, x);
 			auto rev = runFutureValue(F, x);
-			//Need some error checking..
+			if (val == NONE || rev.none()) {
+				return R();
+			}
 			return (*rev)(*val);
 		};
 		return make_future_value(Func);
 	};
 	
-	/*
-	template<typename T, typename A, typename lambda>
-	static auto apply(future_value<T, lambda> F) {
-		return [F] (future_value<T, A> m) {
-			return apply(F,m);
+
+	template <typename A, typename B, typename R>
+	static auto apply(const future_value<std::function<R(B)>,A>& F) {
+		return [F] (const future_value<B,A>& L) {
+			return apply(F,L);
 		};
 	};
-	*/
+	
 
 };
 
@@ -163,9 +165,10 @@ int fvm_3()
 
 	std::function<int(int)> func1 =[](int x) { return 5*x + 34;};
 	std::function<int(int)> func2 =[](int x) { return 5-x;};
-	//future_value<std::function<R(B)>,A>
+
 	future_value<std::function<int(int)>, int> fw = applicative_functor<future_value>::pure<decltype(func1), int>(func1);
 	std::cerr << fw << std::endl;
+
 	auto ty = runFutureValue(fw, 67);
 	std::cerr << ty << std::endl;
 	
@@ -178,6 +181,10 @@ int fvm_3()
 	auto fv = applicative_functor<future_value>::apply<int,int,int>(fw, fvv);
 	auto r0 = runFutureValue(fv, 45);
 	std::cerr << r0 << std::endl;
+
+	auto fv1 = applicative_functor<future_value>::apply<int,int,int>(fw)(fvv);
+	auto r01 = runFutureValue(fv, 45);
+	std::cerr << r01 << std::endl;
 
 	return 0;
 }

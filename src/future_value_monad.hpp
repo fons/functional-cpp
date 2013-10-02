@@ -5,7 +5,7 @@
 #include "functor.hpp"
 #include "applicative_functor.hpp"
 #include "monad.hpp"
-
+#include "maybe.hpp"
 
 
 #endif

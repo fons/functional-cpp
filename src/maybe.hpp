@@ -37,6 +37,10 @@ struct Maybe {
 		return val.first;
 	}
 
+	bool none() const {
+		return (val.second == false);
+	}
+
 private: 
 
 	Maybe() : val(std::make_pair(A(), false)) {}
@@ -79,6 +83,7 @@ bool operator!=(const Maybe<A>& l, const Maybe<B>& r) {
 	return !(l==r);
 }
 
+#define NONE  Maybe<void*>::None()
 
 
 
