@@ -61,7 +61,37 @@ struct applicative_functor<future_value> : public functor <future_value>
 
 };
 
+template<>
+struct monad<future_value> : public applicative_functor<future_value> 
+{
+	template <typename Ret, typename Arg> 
+	static future_value<Ret, Arg>  mreturn(Ret val) {
+		return pure(val);
+	};
 
+	template<typename Ret, typename Arg, typename RetB>
+	static future_value<RetB,Arg> bind(future_value<Ret,Arg>& F, std::function< future_value<RetB,Ret> (Ret)>& f) {
+
+		std::function<RetB (Arg)> comp =[&F, &f](Arg x) {
+			auto val = runFutureValue(F, x);
+			if (val == NONE) {
+				return RetB();
+			}
+			
+			auto cal = runFutureValue(f(*val), *val);
+			if (cal == NONE) {
+				return RetB();
+			}
+			return *cal;
+		};
+
+		return make_future_value(comp);
+	};
+
+	
+};
+
+//////////////////////////////////////////////////////////
 int fvm_0()
 {
 
@@ -190,13 +220,53 @@ int fvm_3()
 }
 int fvm_4()
 {
+	std::function<int(int)> func1 =[](int x) { return 5*x + 34;};	
 
+	std::function<future_value<std::string, int>(int)> func2 = [] (int x) {
+		std::function<std::string(int)> f =[] (int x) {
+			if (x < 100) return std::string("too small");
+			return std::string("just right");
+		};
+		return make_future_value(f);
+	};
 
+	auto fv = make_future_value(func1);
+	std::cerr << fv << std::endl;
+	std::cerr << func2 << std::endl;
+	auto res = runFutureValue(fv, 45); 
+	std::cerr << res << std::endl;
+	std::cerr << "------------------- ****** -----------------------------" << std::endl;
+	auto fy = monad<future_value>::bind<int,int,std::string>(fv, func2);
+	auto mres = runFutureValue(fy, -90);
+	std::cerr << mres << std::endl;
 	return 0;
 }
 int fvm_5()
 {
 
+	std::function<int(int)> func1 =[](int x) { return 5*x + 34;};	
 
+	std::function<future_value<int, int>(int)> func2 = [] (int x) {
+
+		std::function<int(int)> f =[] (int x) {
+			return -30*x + 90;
+		};
+
+		std::function<int(int)> g =[] (int x) {
+			return 90 - 900*x;
+		};
+
+		if (x < 100) {
+			return make_future_value(f);
+		}
+		return make_future_value(g);
+	};
+
+	auto fv = make_future_value(func1);
+	auto fy = monad<future_value>::bind(fv, func2);
+	auto mres = runFutureValue(fy, -90);
+	std::cerr << "-90 ==> " << mres << std::endl;
+	auto mres1 = runFutureValue(fy, 90);
+	std::cerr << "90 ==> " << mres1 << std::endl;
 	return 0;
 }

@@ -70,6 +70,7 @@ int fv_2()
 
 int fv_3()
 {
+	std::function<float(int, int, float)> f = [](int x, int y, float z) { return z *(34*x - x*y);};
 	return 1;
 }
 
