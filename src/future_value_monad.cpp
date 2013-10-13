@@ -110,27 +110,32 @@ int fvm_3()
 	std::function<int(int)> func2 =[](int x) { return 5-x;};
 
 	future_value<std::function<int(int)>, int> fw = applicative_functor<future_value>::pure<decltype(func1), int>(func1);
-	std::cerr << fw << std::endl;
+	std::cerr << " fw : " << fw << std::endl;
 
 	auto ty = runFutureValue(fw, 67);
-	std::cerr << ty << std::endl;
+	std::cerr << " ty : " << ty << " -- (*ty)(45) : " << (*ty)(45) << std::endl;
 	
 	future_value<int,int> fvv(func2);	
-	std::cerr << fvv << std::endl;
+	std::cerr << "fvv : " << fvv << std::endl;
 
 	auto r1 = runFutureValue(fvv, 45);
-	std::cerr << r1 << std::endl;
+	std::cerr << " r1 : " << r1 << std::endl;
 
 	auto fv = applicative_functor<future_value>::apply<int,int,int>(fw, fvv);
 	auto r0 = runFutureValue(fv, 45);
-	std::cerr << r0 << std::endl;
+	std::cerr << "r0 : " << r0 << std::endl;
 
 	auto fv1 = applicative_functor<future_value>::apply<int,int,int>(fw)(fvv);
 	auto r01 = runFutureValue(fv, 45);
 	std::cerr << r01 << std::endl;
+	
+	future_value<int,int> fv0 = functor<future_value>::fmap(func1, fvv); 
+	auto r02 = runFutureValue(fv0, 45);
+	std::cerr << "r02 : " << r02 << std::endl;
 
 	return 0;
 }
+
 int fvm_4()
 {
 	std::function<int(int)> func1 =[](int x) { return 5*x + 34;};	
@@ -154,6 +159,7 @@ int fvm_4()
 	std::cerr << mres << std::endl;
 	return 0;
 }
+
 int fvm_5()
 {
 

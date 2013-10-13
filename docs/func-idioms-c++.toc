@@ -48,17 +48,16 @@
 \contentsline {section}{\numberline {9}Unary Operations}{30}
 \contentsline {subsection}{\numberline {9.1}Unary Operations and Curried Functions}{30}
 \contentsline {subsection}{\numberline {9.2}Functor}{30}
-\contentsline {subsection}{\numberline {9.3}Applicative Functor}{30}
-\contentsline {subsection}{\numberline {9.4}Monad}{30}
-\contentsline {section}{\numberline {10}Stateful Computations}{30}
-\contentsline {subsection}{\numberline {10.1}Capturing State}{30}
-\contentsline {subsection}{\numberline {10.2}Functor}{33}
-\contentsline {subsection}{\numberline {10.3}Applicative Functor}{35}
-\contentsline {subsection}{\numberline {10.4}Monad}{36}
-\contentsline {section}{\numberline {11}Futures and Future Values}{38}
-\contentsline {subsection}{\numberline {11.1}Futures and Async}{38}
-\contentsline {subsection}{\numberline {11.2}Capturing Future Values}{38}
-\contentsline {subsection}{\numberline {11.3}Functor}{39}
-\contentsline {subsection}{\numberline {11.4}Applicative Functor}{39}
-\contentsline {subsection}{\numberline {11.5}Monad}{39}
-\contentsline {section}{\numberline {12}Discussion}{39}
+\contentsline {subsection}{\numberline {9.3}Applicative Functor}{31}
+\contentsline {subsection}{\numberline {9.4}Monad}{31}
+\contentsline {section}{\numberline {10}Stateful Computations}{31}
+\contentsline {subsection}{\numberline {10.1}Capturing State}{31}
+\contentsline {subsection}{\numberline {10.2}Functor}{34}
+\contentsline {subsection}{\numberline {10.3}Applicative Functor}{36}
+\contentsline {subsection}{\numberline {10.4}Monad}{37}
+\contentsline {section}{\numberline {11}Futures and Future Values}{39}
+\contentsline {subsection}{\numberline {11.1}Futures and Async}{39}
+\contentsline {subsection}{\numberline {11.2}Capturing Future Values}{39}
+\contentsline {subsection}{\numberline {11.3}Functor}{40}
+\contentsline {subsection}{\numberline {11.4}Monad}{42}
+\contentsline {section}{\numberline {12}Discussion}{44}
