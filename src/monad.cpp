@@ -296,3 +296,19 @@ int m_14()
 }
 
 
+int m_15()
+{
+	std::function<int* (int)> f = [](int x) { return new int(3*x - 56);};
+	int* M = new int(90);
+	int* retval = monad<raw_pointer>::bind(M, f);
+	std::cerr << " M :" << *M << " ==> " << *retval << std::endl;
+
+	return 0;
+}
+
+
+int m_16()
+{
+
+	return 0;
+}

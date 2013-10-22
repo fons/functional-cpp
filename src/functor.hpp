@@ -18,6 +18,7 @@ struct functor {
 //----------------------------- Implementation -----------------------
 #include "map.hpp"
 #include "unary_op.hpp"
+#include "raw_pointer.hpp"
 
 template <>
 struct functor<std::shared_ptr> {
@@ -114,5 +115,28 @@ struct functor<unary_op>
 
 };
 
+template <>
+struct functor<raw_pointer> {
+
+	template<typename A, typename B>
+	static std::function<B*(A*)>  fmap (std::function<B(A)> f) {
+		return [f](A* v) {
+			if (v) {
+				return new B(f(*v)); 
+			}
+			return static_cast<B*>(nullptr); 
+		};
+	}
+
+	template<typename A, typename B, typename F>
+	static std::function<B* (A*)>  fmap (F f) {
+		return [f](A* v) {
+			if (v) {
+				return new B(f(*v)); 
+			}
+			return static_cast<B*>(nullptr); 
+		};
+	}
+};
 
 #endif

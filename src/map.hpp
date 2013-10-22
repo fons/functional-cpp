@@ -1,5 +1,5 @@
-#ifndef __map__
-#define __map__
+#ifndef h__map__h
+#define h__map__h
 
 template<typename A, typename B>
 std::forward_list<B> map (std::function<B (A)> op, const std::forward_list<A>& L)

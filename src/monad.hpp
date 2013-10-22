@@ -1,6 +1,7 @@
 #ifndef H__MONAD__H
 #define H__MONAD__H
 #include "applicative_functor.hpp"
+#include "raw_pointer.hpp"
 
 template <template<typename T1, typename... D> class F> 
 struct monad : public applicative_functor <F>
@@ -109,5 +110,27 @@ struct monad<unary_op> : public applicative_functor<unary_op> {
 	
 	
 };
+
+//-----------------------------------------------------------------------------------------
+// 
+//  raw pointer
+//
+
+template<> 
+struct monad<raw_pointer> : public applicative_functor<raw_pointer> {
+	
+	template<typename A, typename B>
+	static B* bind(A* M, std::function<B*(A)> f) {
+		if (M) {
+			return f(*M);
+		}
+		return  static_cast<B*>(nullptr);
+	}
+	
+	template <typename A> static A* mreturn (A val) {
+		return new A(val);
+	}
+};
+
 
 #endif

@@ -91,7 +91,10 @@ In this paper I review the implementation of functors, applicative functors and 
 %%------------------------------
 
 Functional programming emphasizes the use of immutable data structures and pure functions.
+Functions are first order objects in functional languages and can be combined which each other.
 A pure function's output is determined solely by its input.
+Functions have no side effects.
+This referential transparancy makes reasoning about the correctness of a computation easy.
 However, this does not capture all the complexity of realistic programs, like state, IO and exceptions. 
 
 In the late '80's and early 90's an approach was pioneered which incorporates impure features, like exceptions, side-effects and IO
@@ -117,7 +120,14 @@ In this article I'll attempt to present an answer to that question.
 %%------------------------------
 %
 %
-To start off, let's try to model failure in a functional setting.
+
+An important chracateristic of functional programming is the ability to compose complex functions from simpler ones.
+Typically this is done by passing the output from one function to the next.
+This combining of functions leads to pipelines through which we send data.
+This works in a very straightforward fashion for pure functions, which have no side effects and which retunr well-typed data.
+
+What happens when functions have sight effects ?
+To set the stage, let's try to model failure in a functional setting.
 A fairly straightforward approach is to have the function return a Boolean and a value as part of a pair.
 In Haskell's function notation the signature of that function is :
 \begin{eqnarray*}
@@ -131,6 +141,14 @@ We can generalize this to a type class $M$:
 f :: a \rightarrow M b
 \end{eqnarray*}
 $M$ represents the 'context' in which the computation occurs.
+
+But now we have a problem.
+The result of the computation is inside a context $M$ and not directly accessible.
+When we combine this function with an otehr one we would need to somehow extract it from the context and pass it on the the next function.
+This is a quite common approach in imperative languages. 
+Before the next value is called the resturn type is inspected and based on the result of this inspection the next function in the pipleine is called.
+The functional approach presented here basically encapsulates these operations and allows functions with side effects to be combined in a straight forward way.
+
 Here are a few ways to apply a function to a value in context $M$:
 \begin{eqnarray*}
 fmap  &::& (a \rightarrow b) \rightarrow M\;a \rightarrow M \;b \\
@@ -163,11 +181,18 @@ The justification for these laws is not so obvious from the intuitive introducti
 %
 \subsection{Currying}
 %%------------------------------
+%
+%
+%
 
-%
-%
-{\em Currying} turns any function into a higher order function of one variable \cite{field}.
+Most functions have more than ione argument.
+Most of the functional idioms below will work on functions with one argument.
+
+{\em Currying} bridges the gap because it  turns any function into a higher order function of one variable \cite{field}.
 The curry of the function returns a partially applied version of the original.
+A partially applied function has received some of its arguments. 
+A curried version of a function is unary function which returns an other unary function. 
+When all the arguments have been passed in, the result of the computation is returned.
 
 The operator $curry2$ is a higher order function which takes a binary function as input 
 and returns a unary higher order function.
@@ -215,10 +240,6 @@ std::function<std::function<R (U)> (T)> curry(std::function<R (T,U)> op)
 %---
 Currying plays an important role in functional programming \cite{field}. 
 It simplifies the design of higher order functions because we only have to consider unary functions.
-
-C++ does not provide a curry operator and functions are not written in curried form. 
-Compare this to Haskell where functions are curried by default \cite{lipovaca, hutton}.
-However writing a curry operator or writing curried versions of a function has become a lot easier now that lambda's are supported.
 
 %%\end{comment}
 
@@ -429,6 +450,12 @@ However, the specialization may in fact be written to support lambda's because l
 $std::function$. 
 In some cases the return type can be cumbersome to explicitly state and $auto$ is used instead.
 
+%
+\subsection{Currying}
+%
+%
+%
+
 
 \subsection{Functor}
 %-------------------
@@ -604,6 +631,28 @@ $mreturn$ is identical to the $pure$ function for applicative functors.
 I use a variadic template to allow monad to be specialized for stl containers which have multiple template arguments. 
 The bind method in \ref{cppmonad} is curried : It takes a monad of type $A$ and return a function.
 This function takes an argument of type $A$ and returns a monad of type $B$, just like Haskell's monad definition shown above.
+
+%
+\subsection{What's Next}
+%
+%
+%
+%
+The remaining sections will discuss the implementation of functional idioms in more detail for an increasingly complex set of contexts.
+The first two, $Maybe$ and $Either$, model computions where the compution can have one of two possible outcomes. 
+Both of these types have two 'slots' of which only one can be active at any one point.
+$Maybe$ is the simplest of the two in that one of the slots represents a state equivalent to 'nothing'. 
+This is familiar to C++ programmers: A pointr can point to a memory location with a legitimate value, or it is equal to $nullptr$, regardless of the type of the pointer.
+
+Either one of the slots of the $Either$ can contain a value. The $Either$ type is a more type safe representation of C/C++ $union$ type.
+
+The next items, lists and shared pointers, are part of the C++ standard library.
+In thses sections I'll show that the functional concepts encapsulate common C++ boiler plate operations and make composition of operation easier.
+
+The last three containers represent computations on functions.
+In C/C++ it is not uncommon to have function pointers as arguments.
+It is less common to consider functions as first class values and provide combinators to build computational piplelines.
+
 
 %
 %
@@ -1497,11 +1546,124 @@ int eim_2()
 %%%==============================================================================----------------------------------------------
 %
 %
+%
+
+
+\subsection{Lists in the C++ Standard Library}
+%
+%
+%
+
+A list is a data structure to which elements can be a added or removed.
+The C++ Standard Library (STL) provides a variety of list implementations.
+The main difference between them is whether they support random access and the coct af adding elements to the list at any location.
+
+$std::vector$ represents a random acess list,  where adding elements to the end of the list is easiest.
+By contrast $std::list$ and $std::forward_list$ represent a doubly and singly linked list respectively where access to elements requires traversal of the list.
+On the other hand it is easy to add elements at the head of the list.
+Lastly $std::deque$ allows elements to be added easily at either end of the list.
+
+The C++ standard library provides iterators to access the elements in the containers.
+Each container supports iterators and these iterators have a basic set of functionalities in common.
+The STL provides algorithms to manipulate the elements of the container.
+
+Iterators rather than containter types are used in the specification of the interface of these algorithms.
+This makes sense since the only real input should be the way to traverse the elements of the containner.
+This way the algorithms can be used for a wider set of containers than just the ones provided by the STL.
+This solution is very scalable since it requires only the specification of the iterator capabilities and not any of the otehr container details.
+
+However generic code using iterators requires iterator specific code since not all iterators support the same functionality.
+So forward iterators may need one implementation, backward iterators an other.
+
+This paper choose to implement the functional idioms for each specific list container.
+This is a less generic approach but it does make the implementation easier to understand.
+
+
+
 \subsection{Functor}
 %-----------------------
+%
+%
+
 
 For lists like $std::list$ and $std::forward\_list$ fmap corresponds to map and is equivalent to iteration over the elements in the list.
 
+\begin{minipage}{\linewidth}
+\begin{lstlisting}[caption=map function using std::transform, label=maps]
+template<typename A, typename F>
+auto map (F f, const std::forward_list<A>& L) -> std::forward_list<decltype(f(A()))>
+{
+  std::forward_list<decltype(f(A()))> H;
+  std::transform(L.begin(), L.end(), std::front_inserter(H), f);
+  H.reverse();
+  return H;
+}
+
+template<typename A, typename F>
+auto map (F f, const std::list<A>& L) -> std::list<decltype(f(A()))>
+{
+	std::list<decltype(f(A()))> H;
+	std::transform(L.begin(), L.end(), std::back_inserter(H), f);
+	return H;
+}
+\end{lstlisting}
+\end{minipage}
+
+
+\begin{minipage}{\linewidth}
+\begin{lstlisting}[caption=functor for std::forward\_list, label=functorfwdlist]
+template<> struct 
+functor<std::forward_list> {
+	template<typename A, typename B>
+	static std::function < std::forward_list<B> (std::forward_list<A>)> fmap(std::function <B (A)> f) {
+		return [f] (std::forward_list<A> L) {
+			return map<A,B>(f,L);
+		};
+	};
+
+	template<typename A, typename B>
+	static std::forward_list<B> fmap(std::function <B (A)> f, std::forward_list<A> L) {
+		return fmap(f)(L);
+	};
+
+	template<typename A, typename B, typename F>
+	static std::forward_list<B> fmap(F f, std::forward_list<A> L) {
+		return map<A,F>(f, L);
+	};
+
+};
+\end{lstlisting}
+\end{minipage}
+
+\begin{minipage}{\linewidth}
+\begin{lstlisting}[caption=functor for std::list, label=functorlist]
+template<> struct 
+functor<std::list> {
+
+  template<typename A, typename B>
+  static std::function < std::list<B> (std::list<A>)> fmap(std::function <B (A)> f) {
+    return [f] (std::list<A> L) {
+      return map<A,B>(f,L);
+    };
+  };
+
+  template<typename A, typename B>
+  static std::list<B> fmap(std::function <B (A)> f, std::list<A> L) {
+    return fmap(f)(L);
+  };
+
+  template<typename A, typename F>
+  static auto fmap(F f, std::list<A> L) -> std::list<decltype(f(A()))> {
+    return map<A,F>(f, L);
+  };
+	template<typename A, typename B, typename F>
+	static auto fmap(F f, std::list<A> L) -> std::list<B> {
+		return map<A,B,F>(f, L);
+  };
+
+};
+\end{lstlisting}
+\end{minipage}
   
 %
 %
@@ -1513,7 +1675,7 @@ For lists like $std::list$ and $std::forward\_list$ fmap corresponds to map and 
 \subsubsection{List}
 %__________________
 %
-For lists there a are two possible implementations for the applicative functor.
+For lists there are two possible implementations for the applicative functor.
 In both cases a list of functions is applied to a list of values, but in one case we apply each function to every value and in the other we apply a function 
 only if we have a value in the corresponding position in the argument list. 
 In the latter case we 'zip' the list of the functions and values.
@@ -1717,7 +1879,7 @@ template<> struct monad<std::list> : public applicative_functor<std::list> {
 %
 %%
 %%
-The implementation for the stl $std::list$ container is showm in listing \ref{listmonad}.
+The implementation for the stl $std::list$ container is shown in listing \ref{listmonad}.
 I've elided the implementation of $mreturn$, which is passing its argument on to the applicative functor's pure method.
 Function $f$ is mapped over list $M$. Since the return type of $f$ is a list the result is a list of lists.
 The this list is flattened, i.e. the lists are merged into a single list $B$ which is then returned.
@@ -1729,59 +1891,95 @@ This flattening operation is an essential part of the monad. It allows monadic o
 
   
 
-\subsection{Shared pointers}
+\subsection{Pointers and Shared pointers}
 %
 %
 %
 
-A shared pointer is another example of a container which holds a value of a particular type.
-The functor implementation for shared pointers is shown in list \ref{shpfunctor}. 
-$fmap$ returns a new shared pointer holding the result of the function application.
-We need to return a new shared pointer because the input and return types of $f$ may be different. 
-Also note that if the dereference fails, an empty shared pointer is returned, rather than an exception thrown.
-%%
-%%
+A pointer is a handle which points to data in memory.
+Pointers are just one example of various resource handles in C++; File handles are an otehr one.
 
-%
-%
-%
-\begin{minipage}{\linewidth}
-\begin{lstlisting}[caption=shared pointer as container, label=shpfunctor]
-template <>
-struct functor<std::shared\_ptr> {
-  template<typename A, typename B>
-  static std::function<std::shared_ptr<B> (std::shared_ptr<A>)>  fmap (std::function<B(A)> f) {
-    return [=](std::shared_ptr<A> v) {
-      if (v) {
-	        return std::make_shared<B>(f(*v)); 
-      }
-      return  std::shared_ptr<B>(nullptr);
-    };
-  }
+Dereferencing the pointer provides access to the data.
+Pointers are a crucial component in any C and C++ application.
+It reduces memory requirements considerably if we can pass or store a pointer to a large data element, rather than a copy.
+In C++ pointer are initialized using $new$. 
+Memory is reclaimed by calling $delete$ on the pointer.
+Pointers contain a value which is accessed through the derefence operation.
+Creating pointer raises the problem of when and where memory needs to be reclaimed.
+The life time of a pointer depends very much on what is done with it.
+For example if the pointer is stored in a list or returned to by a function reclamation need to happen by the new owner of te pointer.
+Smart pointer are deisgned to handle this programatically.
 
-  template<typename A, typename B, typename F>
-  static std::function<std::shared\_ptr<B> (std::shared\_ptr<A>)>  fmap (F f) {
-    return [=](std::shared\_ptr<A> v) {
-      if (v) {
-	return std::make_shared<B>(f(*v)); 
-      }
-      return  std::shared\_ptr<B>(nullptr);
-    };
-  }
-};
-\end{lstlisting}
-\end{minipage}
-%
-%
-%
+The STL provides support for various smart pointers.
+Smart pointers are objects which wrap around a raw pointer and which provide some elementary lifetime managment.
+In particular the $std::shared\_ptr$ implementation of a shared pointer manages a resource which has many objects refering to it..
+The shared pointer uses reference counting to keep track of the number of references to the underlying object.
+Each time a new reference is created through the copy constructor or assigment operator the reference count is increased.
+When the destructor decreases the reference count and is called e.g. when the shared pointer is deleted when it goes out of scope.
+When the reference count goes to zero the underlying object is deleted.
 
-   
+The smart pointer provides access to the raw pointer data by overloading the indirection operator $*$ and the dereferencing or arrow operator $\rightarrow$.
+This makes the smart pointer an other example of a container which refers to a value of a particular type.
+
+
 %
 \subsection{Functor}
 %----------------------
+%
+%
+%
+
+$fmap$ applies a pure function to the contents of a container.
+
+Listing \ref{ptrfunctor} shows the implementation of $fmap$ for a raw pointer.
+The pointer is checked before derefencing, and its value is passed on to the function $f$.
+The return value is a pointer to the data returned by the fucntion $f$.
+This approach only makes sense for relatively straightforward data types.
+
+$fmap$ returns a raw pointer and it is not clear how this pointer is going to be deallocated.
 
 \begin{minipage}{\linewidth}
-\begin{lstlisting}[caption=functor implemention for std::shared\_ptr, label=ptrfunctor]
+\begin{lstlisting}[caption=functor implemention for a raw pointer, label=ptrfunctor]
+template <typename A, typename B> struct raw_pointer {
+  
+};
+template <>
+struct functor<raw_pointer> {
+
+	template<typename A, typename B>
+	static std::function<B*(A*)>  fmap (std::function<B(A)> f) {
+		return [f](A* v) {
+			if (v) {
+				return new B(f(*v)); 
+			}
+			return static_cast<B*>(nullptr); 
+		};
+	}
+
+	template<typename A, typename B, typename F>
+	static std::function<B* (A*)>  fmap (F f) {
+		return [f](A* v) {
+			if (v) {
+				return new B(f(*v)); 
+			}
+			return static_cast<B*>(nullptr); 
+		};
+	}
+};
+
+\end{lstlisting}
+\end{minipage}
+
+It's preferred to use shared pointers for memory managment where ownership is unclear.
+The functor implementation for shared pointers is shown in list \ref{shptrfunctor}. 
+
+$fmap$ returns a new shared pointer holding the result of the function application.
+We need to return a new shared pointer because the input and return types of $f$ may be different. 
+Also note that if the dereference fails, an empty shared pointer is returned, rather than an exception thrown.
+
+
+\begin{minipage}{\linewidth}
+\begin{lstlisting}[caption=functor implemention for std::shared\_ptr, label=shptrfunctor]
 template <>
 struct functor<std::shared_ptr> {
 
@@ -1811,7 +2009,19 @@ struct functor<std::shared_ptr> {
 %
 \subsection{Applicative Functor}
 %--------------------------------
- 
+%
+%
+
+Applicative functors apply pure functions inside containers to values in other containers.
+In C and C++ functio pointers are widely used to pass functions to other parts of the program, e.g. for passing a sort function to algorithms which require one.
+C++ extends this concept with callable function objects. Callable fucntion objects implement the function operator $(...)$.
+In addition the STL extends this concept by introducing the $std::function$ wrapper.
+
+In the case of pointers the applicative functor corresponds to applying a (smart) pointer to a function to a value referenced by a (smart) pointer.
+Here we use a $std::shared_ptr$ to a fucntion object $std::function$.
+Note that pointers to functions are different in that they can't be deleted.
+
+% 
 \begin{minipage}{\linewidth}
 \begin{lstlisting}[caption=applicative functor implemention for std::shared\_ptr, label=ptrapp]
 template<>
@@ -1854,12 +2064,60 @@ struct applicative_functor <std::shared_ptr> : public functor<std::shared_ptr>
 %
 \subsection{Monad}
 %-----------------
+%
+%
+%
+
+In the preceding section we have seen that functors and applicative functors represent fairly common operations with pointers.
+In the case of functors, the dereferenced poiner value is passed in to the pure function and its result is stored in an ohther pointer.
+The applicative functor represents the case where we work with references to both functions and values.
+
+Monads allow effectful functions functions and data in containers to be combined. 
+In this case are these are functions which combine data in an shared pointer pointer with functions which return a shared pointer.
+
+This is not uncommon in C++, where functions may return references to values on the heap or free store.
+For example, a search fucntion returns a reference rather than a copy of the data of the result of search.
+
+Listing \ref{rawptrmonad} shows the implementation of the monad for a raw pointer.
+After checking that the input pointer $M$ is valid, its value is dereferenced and passed to the function.
+The function returns a pointer to its result. 
+If the input pointer is invalid a null pointer is returned.
+The monad allows us to combine functions which return pointers and handles the boiler plate operations of pointer checking and dereferencing.
+
 
 %
 %
+
+\begin{minipage}{\linewidth}
+\begin{lstlisting}[caption=monad implemention for a raw pointer, label=rawptrmonad]
+template<> 
+struct monad<raw_pointer> : public applicative_functor<raw_pointer> {
+	
+	template<typename A, typename B>
+	static B* bind(A* M, std::function<B*(A)> f) {
+		if (M) {
+			return f(*M);
+		}
+		return  static_cast<B*>(nullptr);
+	}
+	
+	template <typename A> static A* mreturn (A val) {
+		return new A(val);
+	}
+};
+\end{lstlisting}
+\end{minipage}
+%
+%
+
+The raw pointer monad in listing \ref{rawptrmonad} has the drawback that pointer ownership is diffused.
+A shared pointer implementation is shown in listing \ref{sharedptrmonad}.
+Its implementation is very similar to that of the raw pointer.
+
+%
 %
 \begin{minipage}{\linewidth}
-\begin{lstlisting}[caption=monad implemention for std::shared\_ptr, label=ptrmonad]
+\begin{lstlisting}[caption=monad implemention for std::shared\_ptr, label=sharedptrmonad]
 template<> struct monad<std::shared_ptr> : public applicative_functor<std::shared_ptr> {
 
 	template<typename A, typename B>
@@ -1879,10 +2137,10 @@ template<> struct monad<std::shared_ptr> : public applicative_functor<std::share
 %
 %
 
-In \ref{ptrmonad} I show the monad implementation for $std::shared\_ptr$. 
 The validity of the shared pointer is checked before it is dereferenced and its value passed on to the function $f$.
 If the shared pointer is empty (or invalid), an empty shared pointer of type $B$ is returned.
 This implies that a chain of monadic computations can return null if any one of its individual computations fails.
+
 
 %
 %%=============================================================================================
@@ -2030,14 +2288,25 @@ The results are not too surprising.
 %
 
 %%%-------------------------------------------------
-\subsection{Unary Operations and Curried Functions}
+\subsection{Unary Functions and Currying}
 %%%-----------------------------------------------------
 
-\subsection{Functor}
+\subsection{Unary Functions and Currying}
 
+Unary fuctions are fuunctions which take a single argument.
+
+
+\subsection{Currying Functions}
 %
 %
 %
+
+
+\subsection{Functor}
+%
+%
+%
+
 \begin{minipage}{\linewidth}
 \begin{lstlisting}[caption=unary operator, label=unop]
 template <typename A, typename B> struct unary_op {

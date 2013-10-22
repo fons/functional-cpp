@@ -170,6 +170,12 @@ int apf_8()
 
   return 0;
 }
+typedef int (FP)(int);
+
+int fgy(int x) 
+{
+	return 200*x-99;
+}
 
 int apf_9()
 {
@@ -238,3 +244,25 @@ int apf_12()
     return 0;
 }
 
+
+int apf_13()
+{
+	std::function<int(int)> f = [](int x){ return 45*x - 89;};
+	auto F = applicative_functor<raw_pointer>::pure(f);
+	auto V = new int (56);
+	auto res = applicative_functor<raw_pointer>::apply(F, V);
+	std::cerr << "V : " << *V << "==> " <<  *res << std::endl;
+	return 0;
+}
+
+int apf_14()
+{
+	std::function<int(int)> f = [](int x){ return 45*x - 89;};
+	auto F = applicative_functor<raw_pointer>::pure([](int x){ return 45*x - 89;});
+	auto V = new int (56);
+	auto res = applicative_functor<raw_pointer>::apply<int,int>(F, V);
+
+	std::cerr << "V : " << *V << "==> " <<  *res << std::endl;
+
+	return 0;
+}

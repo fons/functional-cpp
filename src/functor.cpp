@@ -100,3 +100,23 @@ int functor_9()
   functor<std::list>::fmap(F, L);
   return 0;
 }
+
+int functor_10()
+{
+	std::function<int (int)> f = [](int x) {return 2*x + 89;};
+	int *p = new int(78);
+	int *t = functor<raw_pointer>::fmap(f)(p);
+	std::cerr << " *p " << *p << " ==> " << *t << std::endl;
+	return 0;
+}
+
+int functor_11()
+{
+	return 0;
+}
+
+
+int functor_12()
+{
+	return 0;
+}

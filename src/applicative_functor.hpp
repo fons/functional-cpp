@@ -163,4 +163,49 @@ applicative_functor<std::list> :public functor<std::list>{
 	
 };
 
+template<>
+struct applicative_functor <raw_pointer> : public functor<raw_pointer>
+{
+
+	template<typename A>
+	static A* pure(A val) {
+		return new A(val);
+	}
+
+	
+	template<typename A, typename B>
+	static std::function<B*(A*)> apply(std::function<B(A)>* f) {
+		return [f](A* v) {
+			if (v && f) {
+				auto F = *f;
+				return pure (F(*v)); 
+			}
+			return  static_cast<B*>(nullptr);
+		};
+	}
+
+	template<typename A, typename B>
+	static B* apply(std::function<B(A)>* f, A* v) {
+		return apply(f)(v);
+	}
+	
+	template<typename A, typename B, typename lambda>
+	static std::function<B* (A*)> apply(lambda* f) {
+		return [f](A* v) {
+			if (v && f) {
+				auto F = *f;
+				return pure (F(*v)); 
+			}
+			return static_cast<B*>(nullptr);
+	   };
+	};
+
+	template<typename A, typename B, typename lambda>
+	static B*  apply(lambda* f, A* v) {
+		return apply<A,B,lambda>(f)(v);
+	}	
+};
+
+
+
 #endif

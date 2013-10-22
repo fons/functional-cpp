@@ -1,4 +1,3 @@
-
 #ifndef __proto__
 #define __proto__
 
@@ -113,6 +112,11 @@ extern int functor_7();
 extern int functor_8();
 extern int functor_9();
 
+extern int functor_10();
+extern int functor_11();
+extern int functor_12();
+extern int functor_9();
+
 extern int apf_1();
 extern int apf_2();
 extern int apf_3();
@@ -125,6 +129,8 @@ extern int apf_9();
 extern int apf_10();
 extern int apf_11();
 extern int apf_12();
+extern int apf_13();
+extern int apf_14();
 
 extern int m_0();
 extern int m_1();
@@ -141,6 +147,8 @@ extern int m_11();
 extern int m_12();
 extern int m_13();
 extern int m_14();
+extern int m_15();
+extern int m_16();
 
 extern int w_1();
 
